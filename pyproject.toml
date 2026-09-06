@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dsic-2907-demand-aware-async-fl-nids"
+version = "0.1.0"
+description = "Demand-aware adaptive participation and update budgeting for asynchronous FL-NIDS"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "scikit-learn>=1.4",
+  "torch>=2.2",
+  "pyyaml>=6.0",
+  "matplotlib>=3.8",
+  "scipy>=1.12",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

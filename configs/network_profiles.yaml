@@ -1,0 +1,14 @@
+profiles:
+  normal:
+    default_rtt_ms: 20
+    default_bandwidth_mbps: 100
+  heterogeneous:
+    fast:
+      rtt_ms: 10
+      bandwidth_mbps: 100
+    medium:
+      rtt_ms: 50
+      bandwidth_mbps: 30
+    slow:
+      rtt_ms: 150
+      bandwidth_mbps: 5

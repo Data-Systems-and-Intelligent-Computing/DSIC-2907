@@ -1,0 +1,25 @@
+main:
+  dataset: UNSW-NB15
+  seeds: [42, 123, 2026]
+  alpha: 0.5
+  network_profiles: [normal, heterogeneous]
+  policies: [B0, B1, B2, B3]
+policies:
+  B0:
+    name: Async-Uniform
+    demand_participation: false
+    demand_budget: false
+    update_budget: 1.0
+  B1:
+    name: Async-Demand-Participation
+    demand_participation: true
+    demand_budget: false
+    update_budget: 1.0
+  B2:
+    name: Async-Demand-Budget
+    demand_participation: false
+    demand_budget: true
+  B3:
+    name: Async-Joint-Demand-Aware
+    demand_participation: true
+    demand_budget: true

@@ -1,0 +1,12 @@
+model:
+  type: mlp
+  hidden_dims: [128, 64]
+  dropout: 0.2
+  task: binary
+  precision: fp32
+training:
+  optimizer: adam
+  learning_rate: 0.001
+  batch_size: 64
+  local_epochs: 1
+  seed: 42

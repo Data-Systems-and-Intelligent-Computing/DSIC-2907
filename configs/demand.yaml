@@ -1,0 +1,21 @@
+features:
+  - num_samples
+  - prev_local_train_sec
+  - rtt_ms
+  - throughput_mbps
+  - staleness
+  - age_since_last_update
+normalization: minmax_from_calibration
+demand_outputs:
+  - d_part
+  - d_budget
+participation_levels:
+  low:
+    cooldown_events: 3
+  medium:
+    cooldown_events: 1
+  high:
+    cooldown_events: 0
+update_budget_levels: [0.25, 0.50, 1.00]
+fairness:
+  max_inactivity_events: 20

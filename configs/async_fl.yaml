@@ -1,0 +1,12 @@
+fl:
+  mode: asynchronous
+  num_clients: 10
+  max_concurrency: 3
+  aggregation: weighted_delta
+  staleness_weighting: fixed
+  evaluation_every_accepted_updates: 10
+  checkpoint_every_accepted_updates: 25
+non_iid:
+  partition: dirichlet_label_skew
+  alpha_main: 0.5
+  alpha_robustness: [0.1, 10.0]
