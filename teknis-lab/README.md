@@ -1,7 +1,5 @@
 # Rencana Teknis Laboratorium DSIC-2907
 
-Dokumen ini adalah protokol eksekusi teknis untuk rencana riset satu bulan DSIC-2907. Isinya menerjemahkan desain penelitian menjadi urutan kerja laboratorium: alasan metodologis, implementasi, pengukuran, artefak, verifikasi, dan quality gate. Dokumen ini bukan naskah tesis dan bukan pengganti [README penelitian utama](../README.md) maupun [dokumentasi Day 1](../paper/day1/README.md).
-
 Protokol ini bersifat falsifiable. B0--B3 boleh tidak mendukung hipotesis awal, tetapi setiap kesimpulan harus berasal dari kondisi berpasangan, log mentah, dan metrik yang sudah ditentukan sebelum hasil utama dibaca. Nilai yang belum dibekukan diberi label \`ditentukan pada pilot\`, \`calibration parameter\`, atau \`belum dibekukan\`.
 
 ## 1. Tujuan Dokumen
