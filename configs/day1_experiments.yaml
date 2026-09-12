@@ -1,0 +1,9 @@
+seed: 42
+validation_fraction: 0.20
+device: cpu
+cpu_threads: 1
+dataset_manifest: data/manifests/dataset.json
+preprocessing_manifest: data/manifests/preprocessing.json
+processed_dir: data/processed
+run_dir: results/raw/centralized_seed42
+evaluation_output: results/processed/centralized_seed42_test.json

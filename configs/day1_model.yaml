@@ -1,0 +1,6 @@
+hidden_dimensions: [128, 64]
+dropout: 0.1
+epochs: 10
+batch_size: 512
+optimizer: Adam
+learning_rate: 0.001

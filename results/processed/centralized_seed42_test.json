@@ -1,0 +1,222 @@
+{
+  "auprc_implementation": "sklearn.metrics.average_precision_score",
+  "checkpoint": {
+    "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/results/raw/centralized_seed42/model.pt",
+    "sha256": "bc028f67998253449c3a8bc137092969d9b4a3e1ff5dec89e39ba577c9e9f564"
+  },
+  "checkpoint_selection": "final_epoch",
+  "completed_epochs": 10,
+  "configuration": {
+    "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/results/raw/centralized_seed42/configuration.json",
+    "sha256": "9474425215a997b91d546b455b53bade3ec7ebcd210d98cefd6630771762a3d7"
+  },
+  "confusion_matrix_order": [
+    "Normal",
+    "Attack"
+  ],
+  "cpu_threads": 1,
+  "dataset_manifest": {
+    "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/data/manifests/dataset.json",
+    "sha256": "040a1dc566f81fdacb1ccfff7b8dc77408511eeb043c57f5030ab608c1ee26b1"
+  },
+  "device": "cpu",
+  "evaluation_package_versions": {
+    "Jinja2": "3.1.6",
+    "MarkupSafe": "3.0.3",
+    "PyYAML": "6.0.3",
+    "Pygments": "2.21.0",
+    "build": "1.6.0",
+    "cloudpickle": "3.1.2",
+    "demand-aware-async-fl-nids": "0.1.0",
+    "filelock": "3.32.3",
+    "fsspec": "2026.7.0",
+    "iniconfig": "2.3.0",
+    "joblib": "1.6.0",
+    "mpmath": "1.3.0",
+    "narwhals": "2.25.0",
+    "networkx": "3.6.1",
+    "numpy": "2.5.3",
+    "packaging": "26.3",
+    "pandas": "2.3.3",
+    "pip": "25.1.1",
+    "pluggy": "1.6.0",
+    "pyproject_hooks": "1.2.0",
+    "pytest": "9.1.1",
+    "python": "3.14.4",
+    "python-dateutil": "2.9.0.post0",
+    "pytz": "2026.3.post1",
+    "ruff": "0.16.6",
+    "scikit-learn": "1.9.0",
+    "scipy": "1.18.1",
+    "setuptools": "78.1.0",
+    "six": "1.17.0",
+    "sympy": "1.14.0",
+    "threadpoolctl": "3.6.0",
+    "torch": "2.14.0+cpu",
+    "typing_extensions": "4.16.0",
+    "tzdata": "2026.3"
+  },
+  "final_validation_metrics": {
+    "accuracy": 0.9455074282129516,
+    "attack_recall": 0.97888474590473,
+    "auprc_average_precision": 0.9950074218404495,
+    "auroc": 0.9895371480790984,
+    "balanced_accuracy": 0.926629872952365,
+    "confusion_matrix": [
+      [
+        9793,
+        1407
+      ],
+      [
+        504,
+        23365
+      ]
+    ],
+    "macro_f1": 0.9359080156852773
+  },
+  "git": null,
+  "model_config": {
+    "batch_size": 512,
+    "dropout": 0.1,
+    "epochs": 10,
+    "hidden_dimensions": [
+      128,
+      64
+    ],
+    "learning_rate": 0.001,
+    "optimizer": "Adam"
+  },
+  "n_features": 192,
+  "optimizer_defaults": {
+    "amsgrad": false,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "capturable": false,
+    "decoupled_weight_decay": false,
+    "differentiable": false,
+    "eps": 1e-08,
+    "foreach": null,
+    "fused": null,
+    "lr": 0.001,
+    "maximize": false,
+    "weight_decay": 0
+  },
+  "package_versions": {
+    "Jinja2": "3.1.6",
+    "MarkupSafe": "3.0.3",
+    "PyYAML": "6.0.3",
+    "Pygments": "2.21.0",
+    "build": "1.6.0",
+    "cloudpickle": "3.1.2",
+    "demand-aware-async-fl-nids": "0.1.0",
+    "filelock": "3.32.3",
+    "fsspec": "2026.7.0",
+    "iniconfig": "2.3.0",
+    "joblib": "1.6.0",
+    "mpmath": "1.3.0",
+    "narwhals": "2.25.0",
+    "networkx": "3.6.1",
+    "numpy": "2.5.3",
+    "packaging": "26.3",
+    "pandas": "2.3.3",
+    "pip": "25.1.1",
+    "pluggy": "1.6.0",
+    "pyproject_hooks": "1.2.0",
+    "pytest": "9.1.1",
+    "python": "3.14.4",
+    "python-dateutil": "2.9.0.post0",
+    "pytz": "2026.3.post1",
+    "ruff": "0.16.6",
+    "scikit-learn": "1.9.0",
+    "scipy": "1.18.1",
+    "setuptools": "78.1.0",
+    "six": "1.17.0",
+    "sympy": "1.14.0",
+    "threadpoolctl": "3.6.0",
+    "torch": "2.14.0+cpu",
+    "typing_extensions": "4.16.0",
+    "tzdata": "2026.3"
+  },
+  "positive_class": {
+    "label": 1,
+    "name": "Attack"
+  },
+  "preprocessing_manifest": {
+    "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/data/manifests/preprocessing.json",
+    "sha256": "7dbcb4b7b1cf41e3b413f061e5ec6a1e6074c8ea4262c2be6b0324ab741f6f61"
+  },
+  "seed": 42,
+  "source_csv_sha256": {
+    "test": "734fe6642edf758f7c94d7d9149426b49d202fe8e7bf0bef47392489c3c0a559",
+    "train": "bec7dd5ec88dc2a0ccc7a07879d338395ed7421750f675fd0339e07dfe0648fa"
+  },
+  "splits": {
+    "official_training": {
+      "class_counts": {
+        "0": 56000,
+        "1": 119341
+      },
+      "positive_prevalence": 0.6806223302022916,
+      "row_count": 175341
+    },
+    "test": {
+      "class_counts": {
+        "0": 37000,
+        "1": 45332
+      },
+      "positive_prevalence": 0.5506000097167566,
+      "row_count": 82332
+    },
+    "train_fit": {
+      "class_counts": {
+        "0": 44800,
+        "1": 95472
+      },
+      "positive_prevalence": 0.680620508725904,
+      "row_count": 140272
+    },
+    "validation": {
+      "class_counts": {
+        "0": 11200,
+        "1": 23869
+      },
+      "positive_prevalence": 0.6806296159000826,
+      "row_count": 35069
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.8438760141864645,
+    "attack_recall": 0.98100679431748,
+    "auprc_average_precision": 0.9808075687661769,
+    "auroc": 0.9736543548975606,
+    "balanced_accuracy": 0.8284358295911725,
+    "confusion_matrix": [
+      [
+        25007,
+        11993
+      ],
+      [
+        861,
+        44471
+      ]
+    ],
+    "macro_f1": 0.8346338545746265
+  },
+  "threshold": 0.5,
+  "trainable_parameters": 33025,
+  "training_bce_by_epoch": [
+    0.20118312388267595,
+    0.12682760181293204,
+    0.12255093512339155,
+    0.12045289945055797,
+    0.1190692614846835,
+    0.11711662582984275,
+    0.11620311916734523,
+    0.11551394585183916,
+    0.11466572242070322,
+    0.11406326654958959
+  ],
+  "training_duration_seconds": 5.599518056027591
+}
