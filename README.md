@@ -1,12 +1,5 @@
 # DSIC-2907 — Demand-Aware Adaptive Resource Allocation for Asynchronous Federated NIDS
 
-## Implementasi yang sudah selesai — Day 1
-
-Migrasi dari workspace TA mencakup preprocessing UNSW-NB15, baseline MLP
-terpusat, pengujian, dataset lokal, checkpoint, hasil evaluasi, dan dokumen.
-Panduan reproduksi dan metrik: [Day 1](paper/day1/README.md).
-Catatan pemindahan: [Migration](paper/day1/MIGRATION.md).
-
 - Kode aktif: `src/preprocess.py`, `src/centralized.py`, `src/metrics.py`.
 - Konfigurasi Day 1: `configs/day1_experiments.yaml`, `configs/day1_model.yaml`.
 - Konfigurasi FL pembimbing tetap pada `configs/experiments.yaml` dan `configs/model.yaml`.
