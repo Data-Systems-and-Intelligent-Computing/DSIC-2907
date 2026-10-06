@@ -1,0 +1,248 @@
+{
+  "algorithm_version": "binary_dirichlet_cumulative_floor_v1",
+  "allocation_rule": "floor cumulative cuts; remainder to last client; concatenate 0 then 1",
+  "alpha": 0.5,
+  "artifacts": {
+    "client_distribution": {
+      "path": "/home/fadil/DSIC-2907/data/partitions/partition_alpha0.5_seed123_clients.csv",
+      "sha256": "816076304b87b72234f67dedaf5ca2b965e17aa14c9ce76c19a4ed07beb03e9b"
+    },
+    "partition": {
+      "path": "/home/fadil/DSIC-2907/data/partitions/partition_alpha0.5_seed123.json",
+      "sha256": "d4adee77a1e682ed989ffc908dc0e59e470ac1f7e4ca095c7f78996bf8650dd6"
+    }
+  },
+  "checks": {
+    "exact_train_fit_coverage": true,
+    "no_overlap": true,
+    "no_validation_rows": true
+  },
+  "client_ids": [
+    "client_0",
+    "client_1",
+    "client_2",
+    "client_3",
+    "client_4",
+    "client_5",
+    "client_6",
+    "client_7",
+    "client_8",
+    "client_9"
+  ],
+  "clients": {
+    "client_0": {
+      "class_counts": {
+        "0": 2033,
+        "1": 5628
+      },
+      "positive_prevalence": 0.7346299438715572,
+      "row_count": 7661
+    },
+    "client_1": {
+      "class_counts": {
+        "0": 3562,
+        "1": 20563
+      },
+      "positive_prevalence": 0.8523523316062176,
+      "row_count": 24125
+    },
+    "client_2": {
+      "class_counts": {
+        "0": 12143,
+        "1": 0
+      },
+      "positive_prevalence": 0.0,
+      "row_count": 12143
+    },
+    "client_3": {
+      "class_counts": {
+        "0": 7987,
+        "1": 3465
+      },
+      "positive_prevalence": 0.3025672371638142,
+      "row_count": 11452
+    },
+    "client_4": {
+      "class_counts": {
+        "0": 725,
+        "1": 32104
+      },
+      "positive_prevalence": 0.9779158670687502,
+      "row_count": 32829
+    },
+    "client_5": {
+      "class_counts": {
+        "0": 764,
+        "1": 1244
+      },
+      "positive_prevalence": 0.6195219123505976,
+      "row_count": 2008
+    },
+    "client_6": {
+      "class_counts": {
+        "0": 3887,
+        "1": 10420
+      },
+      "positive_prevalence": 0.7283148109317118,
+      "row_count": 14307
+    },
+    "client_7": {
+      "class_counts": {
+        "0": 9992,
+        "1": 1554
+      },
+      "positive_prevalence": 0.1345920665165425,
+      "row_count": 11546
+    },
+    "client_8": {
+      "class_counts": {
+        "0": 238,
+        "1": 19729
+      },
+      "positive_prevalence": 0.9880803325487053,
+      "row_count": 19967
+    },
+    "client_9": {
+      "class_counts": {
+        "0": 3469,
+        "1": 765
+      },
+      "positive_prevalence": 0.18068020784128483,
+      "row_count": 4234
+    }
+  },
+  "dataset_manifest": {
+    "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/data/manifests/dataset.json",
+    "sha256": "040a1dc566f81fdacb1ccfff7b8dc77408511eeb043c57f5030ab608c1ee26b1"
+  },
+  "empty_client_rule": "retain; no resampling or rebalancing",
+  "index_space": "zero_based_official_training_row_position",
+  "num_clients": 10,
+  "numpy_version": "2.5.3",
+  "partition_scope": "train_fit_only",
+  "preprocessing_manifest": {
+    "path": "/home/fadil/DSIC-2907/data/manifests/preprocessing.json",
+    "sha256": "7dbcb4b7b1cf41e3b413f061e5ec6a1e6074c8ea4262c2be6b0324ab741f6f61"
+  },
+  "schema_version": 1,
+  "seed": 123,
+  "seed_rule": "PCG64(SeedSequence([partition_seed, class_label])); shuffle then draw",
+  "split_indices": {
+    "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/data/processed/split_indices.npz",
+    "sha256": "28001b6bfbed35f83b6d45d4bcb4b0c8392ff193f6448a43e058e4c547e5bb94"
+  },
+  "split_seed": 42,
+  "train_fit": {
+    "class_counts": {
+      "0": 44800,
+      "1": 95472
+    },
+    "positive_prevalence": 0.680620508725904,
+    "row_count": 140272
+  },
+  "training_source": {
+    "class_counts": {
+      "0": 56000,
+      "1": 119341
+    },
+    "dtypes": {
+      "ackdat": "float64",
+      "attack_cat": "string",
+      "ct_dst_ltm": "int64",
+      "ct_dst_sport_ltm": "int64",
+      "ct_dst_src_ltm": "int64",
+      "ct_flw_http_mthd": "int64",
+      "ct_ftp_cmd": "int64",
+      "ct_src_dport_ltm": "int64",
+      "ct_src_ltm": "int64",
+      "ct_srv_dst": "int64",
+      "ct_srv_src": "int64",
+      "ct_state_ttl": "int64",
+      "dbytes": "int64",
+      "dinpkt": "float64",
+      "djit": "float64",
+      "dload": "float64",
+      "dloss": "int64",
+      "dmean": "int64",
+      "dpkts": "int64",
+      "dtcpb": "int64",
+      "dttl": "int64",
+      "dur": "float64",
+      "dwin": "int64",
+      "id": "int64",
+      "is_ftp_login": "int64",
+      "is_sm_ips_ports": "int64",
+      "label": "int64",
+      "proto": "string",
+      "rate": "float64",
+      "response_body_len": "int64",
+      "sbytes": "int64",
+      "service": "string",
+      "sinpkt": "float64",
+      "sjit": "float64",
+      "sload": "float64",
+      "sloss": "int64",
+      "smean": "int64",
+      "spkts": "int64",
+      "state": "string",
+      "stcpb": "int64",
+      "sttl": "int64",
+      "swin": "int64",
+      "synack": "float64",
+      "tcprtt": "float64",
+      "trans_depth": "int64"
+    },
+    "filename": "UNSW_NB15_training-set.csv",
+    "ordered_source_columns": [
+      "id",
+      "dur",
+      "proto",
+      "service",
+      "state",
+      "spkts",
+      "dpkts",
+      "sbytes",
+      "dbytes",
+      "rate",
+      "sttl",
+      "dttl",
+      "sload",
+      "dload",
+      "sloss",
+      "dloss",
+      "sinpkt",
+      "dinpkt",
+      "sjit",
+      "djit",
+      "swin",
+      "stcpb",
+      "dtcpb",
+      "dwin",
+      "tcprtt",
+      "synack",
+      "ackdat",
+      "smean",
+      "dmean",
+      "trans_depth",
+      "response_body_len",
+      "ct_srv_src",
+      "ct_state_ttl",
+      "ct_dst_ltm",
+      "ct_src_dport_ltm",
+      "ct_dst_sport_ltm",
+      "ct_dst_src_ltm",
+      "is_ftp_login",
+      "ct_ftp_cmd",
+      "ct_flw_http_mthd",
+      "ct_src_ltm",
+      "ct_srv_dst",
+      "is_sm_ips_ports",
+      "attack_cat",
+      "label"
+    ],
+    "path": "/home/fadil/TA/Code/Data/UNSW-NB15/OneDrive_3_9-7-2026/CSV Files/Training and Testing Sets/UNSW_NB15_training-set.csv",
+    "positive_prevalence": 0.6806223302022916,
+    "row_count": 175341,
+    "sha256": "bec7dd5ec88dc2a0ccc7a07879d338395ed7421750f675fd0339e07dfe0648fa"
+  }
+}

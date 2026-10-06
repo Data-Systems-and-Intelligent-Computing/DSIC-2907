@@ -1,12 +1,16 @@
 # DSIC-2907 — Demand-Aware Adaptive Resource Allocation for Asynchronous Federated NIDS
 
-- Kode aktif: `src/preprocess.py`, `src/centralized.py`, `src/metrics.py`.
+- Kode aktif: `src/preprocess.py`, `src/centralized.py`, `src/metrics.py`, `src/partition.py`.
 - Konfigurasi Day 1: `configs/day1_experiments.yaml`, `configs/day1_model.yaml`.
 - Konfigurasi FL pembimbing tetap pada `configs/experiments.yaml` dan `configs/model.yaml`.
 - Hasil tetap: `results/processed/centralized_seed42_test.json`.
 - Jurnal, audit, template dan referensi: `paper/docs/`.
 
-Modul FL dan pengujian placeholder di bawah masih merupakan scaffold; hasil
+Day 2 selesai: 10 client pada alpha 0.5 untuk seed 42, 123, dan 2026;
+partition, distribusi kelas, dan manifest tersimpan di [`data/partitions/`](data/partitions/README.md).
+Seluruh 140,272 train-fit rows tercakup tepat sekali tanpa validation/test.
+
+Modul FL lainnya dan pengujian placeholder di bawah masih merupakan scaffold; hasil
 baseline terpusat belum membuktikan implementasi atau performa FL.
 
 Repositori penelitian **DSIC-2907** untuk menguji apakah *workload* dan kondisi terkini setiap klien dapat dipakai untuk membentuk estimasi *demand*, lalu menggunakan estimasi tersebut untuk mengatur **participation priority/frequency** dan **update budget** pada *Asynchronous Federated Learning* sehingga komunikasi menjadi lebih efisien tanpa menurunkan performa *Network Intrusion Detection System* (NIDS) secara bermakna pada data *non-IID*.
