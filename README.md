@@ -1,6 +1,7 @@
 # DSIC-2907 — Demand-Aware Adaptive Resource Allocation for Asynchronous Federated NIDS
 
-- Kode aktif: `src/preprocess.py`, `src/centralized.py`, `src/metrics.py`, `src/partition.py`.
+- Kode aktif: `src/preprocess.py`, `src/centralized.py`, `src/metrics.py`, `src/partition.py`,
+  `src/client.py`, `src/async_server.py`, `src/b0.py`.
 - Konfigurasi Day 1: `configs/day1_experiments.yaml`, `configs/day1_model.yaml`.
 - Konfigurasi FL pembimbing tetap pada `configs/experiments.yaml` dan `configs/model.yaml`.
 - Hasil tetap: `results/processed/centralized_seed42_test.json`.
@@ -10,12 +11,18 @@ Day 2 selesai: 10 client pada alpha 0.5 untuk seed 42, 123, dan 2026;
 partition, distribusi kelas, dan manifest tersimpan di [`data/partitions/`](data/partitions/README.md).
 Seluruh 140,272 train-fit rows tercakup tepat sekali tanpa validation/test.
 
-Modul FL lainnya dan pengujian placeholder di bawah masih merupakan scaffold; hasil
-baseline terpusat belum membuktikan implementasi atau performa FL.
+Day 3 selesai: pilot B0 seed 42 menerapkan 30 update tanpa global-round barrier,
+dengan uniform idle-client dispatch, fixed local training, dan budget 100%.
+Validation Macro-F1 akhir: 0.924870; official test tidak dievaluasi.
+Replay menghasilkan final model identik. [Jurnal Day 3](paper/docs/Jurnal/Day-3-B0-Asynchronous-Training.md)
+mencatat konfigurasi, artefak, perintah, dan batas pengukuran.
+
+Modul demand-aware, compression, byte accounting, dan pengujian placeholder lainnya
+masih scaffold; pilot B0 belum membuktikan manfaat metode B1--B3.
 
 Repositori penelitian **DSIC-2907** untuk menguji apakah *workload* dan kondisi terkini setiap klien dapat dipakai untuk membentuk estimasi *demand*, lalu menggunakan estimasi tersebut untuk mengatur **participation priority/frequency** dan **update budget** pada *Asynchronous Federated Learning* sehingga komunikasi menjadi lebih efisien tanpa menurunkan performa *Network Intrusion Detection System* (NIDS) secara bermakna pada data *non-IID*.
 
-> **Status penelitian:** desain eksperimen dibekukan untuk eksperimen utama satu bulan.  
+> **Status penelitian:** Day 1–3 selesai sampai pilot B0; pembekuan protokol eksperimen utama direncanakan pada Day 14.\
 > **Backbone:** Asynchronous Federated Learning.  
 > **Dataset utama:** UNSW-NB15.  
 > **Task utama:** binary intrusion detection, `normal` vs `attack`.  
@@ -24,6 +31,24 @@ Repositori penelitian **DSIC-2907** untuk menguji apakah *workload* dan kondisi 
 > **Main non-IID setting:** Dirichlet label skew, `alpha = 0.5`.  
 > **Minimum repeated runs:** 3 seeds.  
 > **Kontribusi utama:** joint demand-conditioned participation dan update budgeting, bukan algoritma asynchronous FL baru dan bukan algoritma sparsification baru.
+
+## Laporan kegiatan terbaru — 6 Oktober 2026
+
+[Laporan harian lengkap](paper/docs/Jurnal/Laporan-Harian-2026-10-06.md)
+mencatat pekerjaan, hasil, artefak, pengujian, dan tindak lanjut hari ini.
+
+| Tahap | Status dan hasil |
+|---|---|
+| Day 1 | Prasyarat diverifikasi kembali; delapan fingerprint artefak cocok. |
+| Day 2 | Selesai: tiga partition sepuluh client, alpha 0.5, tanpa overlap/held-out rows. |
+| Day 3 | Selesai sampai pilot B0: 30 accepted updates; replay final model identik. |
+| Verifikasi akhir | 93 tes lulus; full lint, format file Day 3, dan package build lulus. |
+| Berikutnya | Day 4 — controlled versioning dan staleness verification. |
+
+Hasil validation pilot B0 dan status implementasi dirinci dalam
+[jurnal Day 3](paper/docs/Jurnal/Day-3-B0-Asynchronous-Training.md).
+Official test tidak dievaluasi hari ini; accounting transport lengkap dan
+perbandingan B0–B3 masih menunggu tahap selanjutnya.
 
 ---
 
@@ -1596,4 +1621,3 @@ client slow   → RTT tinggi, bandwidth rendah
 Untuk tools-nya, penelitian ini cukup dikerjakan dengan **Python + PyTorch** untuk model dan Federated Learning logic, `NumPy/pandas/scikit-learn/SciPy` untuk preprocessing dan evaluasi, serta `matplotlib` untuk visualisasi. Linux dan Docker dipakai untuk testbed; `cgroup v2` membantu membuat capability client konsisten, sedangkan `tc/netem` digunakan untuk latency/bandwidth emulation. Seluruh konfigurasi eksperimen disimpan dalam YAML, partition dan dataset diberi manifest/hash, dan setiap run menyimpan event-level log. Tidak perlu Kubernetes, Spark, Hadoop, reinforcement learning, atau edge device fisik untuk menjawab RQ utama bulan pertama.
 
 Yang paling penting: penelitian ini bukan pertanyaan **“apakah asynchronous FL lebih bagus daripada synchronous FL?”**, dan bukan pula **“apakah sparsification mengurangi komunikasi?”**. Pertanyaan utamanya adalah **“apakah state klien dapat diubah menjadi demand yang secara bersama mengatur kesempatan partisipasi dan update budget sehingga Asynchronous FL mencapai kualitas NIDS yang sama dengan komunikasi lebih sedikit, dan pada kondisi apa keuntungan itu muncul atau gagal?”** Itulah inti eksperimennya.
-

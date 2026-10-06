@@ -1,0 +1,154 @@
+{
+  "accepted_updates": 30,
+  "aggregation_equation": "global += server_lr * (client_samples / total_train_fit) * fixed_multiplier * delta",
+  "artifacts": {
+    "configuration": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day3_seed42/configuration.json",
+      "sha256": "35a36874a8eca43d247877f2b8844c7f06c5d834c1601ac11a165e27bb740b2a"
+    },
+    "events": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day3_seed42/events.jsonl",
+      "sha256": "b8db108da9760020f8d43682261ed75f71a0fd0a616602f516ac9ea034c01917"
+    },
+    "final_model": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day3_seed42/model.pt",
+      "sha256": "531ec95f359d4567d9df47f856e6d9f371c9e5346c1d095ae8193f5866ebe8f3"
+    },
+    "initial_model": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day3_seed42/initial.pt",
+      "sha256": "4a8cc4dd6572d0cee4d7b682a3e31330b1d34b3538b4821177c2b29a4bcee77d"
+    },
+    "validation": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day3_seed42/validation.json",
+      "sha256": "210c39a669719fdfb032f40e0f14345d9c169c7f68fb49a56ff1f351b7f08bc5"
+    },
+    "version_history": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day3_seed42/version_history.json",
+      "sha256": "02fe366c486dd79debf23adf5b73a10cc109bb6bd419118087c1fc9bf0b345c7"
+    }
+  },
+  "async_loop_wall_clock_seconds": 7.562101732997689,
+  "byte_scope": "local process-pool IPC; serialized tensor payload bytes exclude IPC/framing overhead",
+  "checkpoints": [
+    {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day3_seed42/checkpoint_v25.pt",
+      "sha256": "bd85b9f63b5bd855b02e20c2ba5783cc3939afe5174f0adaed2c6c12985bec1c"
+    }
+  ],
+  "client_updates": {
+    "client_0": 1,
+    "client_1": 4,
+    "client_2": 1,
+    "client_3": 2,
+    "client_4": 3,
+    "client_5": 3,
+    "client_6": 6,
+    "client_7": 4,
+    "client_8": 4,
+    "client_9": 2
+  },
+  "partition_sha256": "d918af9ad5fb0dcd2e19b3fb38e3052c740d3e0e29aa5b871a6fa3e3aef80407",
+  "pilot_wall_clock_seconds": 7.676641859987285,
+  "policy": {
+    "demand_budget": false,
+    "demand_participation": false,
+    "name": "Async-Uniform",
+    "update_budget": 1.0
+  },
+  "schema_version": 1,
+  "seed": 42,
+  "serialized_download_bytes": 4047990,
+  "serialized_upload_bytes": 4046070,
+  "stage": "Day 3 B0 pilot",
+  "status": "completed",
+  "validation_curve": [
+    {
+      "elapsed_seconds": 0.10934887698385864,
+      "metrics": {
+        "accuracy": 0.3197695970800422,
+        "attack_recall": 0.0008379069085424609,
+        "auprc_average_precision": 0.6839454476211151,
+        "auroc": 0.5325846136351394,
+        "balanced_accuracy": 0.5001510963114141,
+        "confusion_matrix": [
+          [
+            11194,
+            6
+          ],
+          [
+            23849,
+            20
+          ]
+        ],
+        "macro_f1": 0.24290606510056184
+      },
+      "server_version": 0
+    },
+    {
+      "elapsed_seconds": 4.894291645963676,
+      "metrics": {
+        "accuracy": 0.740426017280219,
+        "attack_recall": 0.6342117390757886,
+        "auprc_average_precision": 0.9781243191471237,
+        "auroc": 0.9590310784909297,
+        "balanced_accuracy": 0.8004987266807515,
+        "confusion_matrix": [
+          [
+            10828,
+            372
+          ],
+          [
+            8731,
+            15138
+          ]
+        ],
+        "macro_f1": 0.7364451398544014
+      },
+      "server_version": 10
+    },
+    {
+      "elapsed_seconds": 5.685042632976547,
+      "metrics": {
+        "accuracy": 0.9347001625367133,
+        "attack_recall": 0.9992039884368846,
+        "auprc_average_precision": 0.990205552584695,
+        "auroc": 0.9803702875217707,
+        "balanced_accuracy": 0.8982180656470138,
+        "confusion_matrix": [
+          [
+            8929,
+            2271
+          ],
+          [
+            19,
+            23850
+          ]
+        ],
+        "macro_f1": 0.9202659571024787
+      },
+      "server_version": 20
+    },
+    {
+      "elapsed_seconds": 6.693318584992085,
+      "metrics": {
+        "accuracy": 0.9378368359519804,
+        "attack_recall": 0.9941346516402028,
+        "auprc_average_precision": 0.9919082544585855,
+        "auroc": 0.9834630037915288,
+        "balanced_accuracy": 0.9059958972486728,
+        "confusion_matrix": [
+          [
+            9160,
+            2040
+          ],
+          [
+            140,
+            23729
+          ]
+        ],
+        "macro_f1": 0.9248702852554938
+      },
+      "server_version": 30
+    }
+  ]
+}

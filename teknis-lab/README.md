@@ -356,6 +356,30 @@ B0 memakai uniform participation dan full update budget. Nilai concurrency, eval
 
 B0 harus terbukti asynchronous pada event log dan harus memiliki raw evidence yang cukup untuk menurunkan staleness, bytes, validation curve, dan run summary. Jika server menunggu slowest client, berhenti dan perbaiki backbone.
 
+`Status: COMPLETE — 6 October 2026 (Day 3 pilot)`
+
+`src/b0.py` menjalankan client pada process pool CPU terpisah dan menerapkan setiap
+completion langsung, tanpa global round. Pilot seed 42 memakai 10 client, concurrency
+3, 30 accepted updates, local epoch 1, batch 64, Adam 0.001, dropout 0.2, fp32,
+dan 1 CPU thread per proses. B0 memilih uniformly dari client idle; budget selalu
+1.00. Persamaan pilot: `global += (client_samples / 140272) * delta`, dengan
+server learning rate dan fixed staleness multiplier sama-sama 1.0. Nilai ini
+tersimpan dalam snapshot, tetapi main-experiment freeze tetap Day 14.
+
+Pilot mencatat 90 event download/arrival/apply dan mencapai version 30. Client 0
+download version 0 dan baru apply pada version 14; 13 update lain diterapkan tanpa
+menunggunya. Validation dilakukan pada version 0/10/20/30, dengan Macro-F1 akhir
+0.924870. Checkpoint version 25 dan final model tersimpan. Replay memverifikasi
+payload hashes dan merekonstruksi model akhir identik tanpa membaca raw CSV.
+Official test tidak dibuka. Full suite: 93 passed; full lint, format file Day 3,
+dan package build lulus.
+
+Artefak dan perintah: [Jurnal Day 3](../paper/docs/Jurnal/Day-3-B0-Asynchronous-Training.md).
+Byte fields pada pilot menghitung serialized tensor payload, belum IPC framing atau
+network transport overhead. Arrival order live bergantung pada OS; determinisme
+training lokal dan replay recorded arrival trace diuji secara terpisah. Day 4 tetap
+tahap berikutnya untuk memperluas verifikasi versioning/staleness.
+
 ## Day 4 — Server versioning dan staleness
 
 ### Tujuan

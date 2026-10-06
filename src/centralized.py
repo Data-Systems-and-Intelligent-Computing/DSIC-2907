@@ -50,7 +50,7 @@ def dense_batch(values, indices):
     return torch.from_numpy(np.asarray(batch, dtype=np.float32))
 
 
-def train_model(values, labels, config, seed, cpu_threads=1):
+def train_model(values, labels, config, seed, cpu_threads=1, initial_state=None, log_epochs=True):
     if config["optimizer"] != "Adam":
         raise ValueError("Day 1 supports Adam only")
     for key in ("epochs", "batch_size"):
@@ -63,6 +63,8 @@ def train_model(values, labels, config, seed, cpu_threads=1):
     torch.manual_seed(seed)
     torch.set_num_threads(cpu_threads)
     model = build_model(values.shape[1], config).cpu()
+    if initial_state is not None:
+        model.load_state_dict(initial_state, strict=True)
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
     loss_function = nn.BCEWithLogitsLoss()
     generator = torch.Generator().manual_seed(seed)
@@ -89,7 +91,8 @@ def train_model(values, labels, config, seed, cpu_threads=1):
             optimizer.step()
             total_loss += float(loss.detach()) * len(indices)
         history.append(total_loss / len(labels))
-        print(f"Epoch {epoch + 1}/{config['epochs']}: train BCE={history[-1]:.6f}", flush=True)
+        if log_epochs:
+            print(f"Epoch {epoch + 1}/{config['epochs']}: train BCE={history[-1]:.6f}", flush=True)
     return model, history, time.perf_counter() - started, optimizer.defaults
 
 
