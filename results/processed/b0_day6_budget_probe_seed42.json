@@ -1,0 +1,196 @@
+{
+  "actions": {
+    "0.25": {
+      "budget": 0.25,
+      "compression_seconds": 0.009351328999855468,
+      "model_effect_verified": true,
+      "payload": {
+        "path": "/home/fadil/DSIC-2907/results/raw/b0_day6_budget_probe_seed42/messages/job_0000_budget_0.25_upload.pt",
+        "sha256": "8be670399e8e2fc0546ceed4d45d76a90a9805c9c11608244262e32a99d63c04"
+      },
+      "per_tensor_entries": {
+        "0.bias": {
+          "retained": 32,
+          "total": 128
+        },
+        "0.weight": {
+          "retained": 6144,
+          "total": 24576
+        },
+        "3.bias": {
+          "retained": 16,
+          "total": 64
+        },
+        "3.weight": {
+          "retained": 2048,
+          "total": 8192
+        },
+        "5.bias": {
+          "retained": 1,
+          "total": 1
+        },
+        "5.weight": {
+          "retained": 16,
+          "total": 64
+        }
+      },
+      "retained_parameters": 8257,
+      "saved_total_bytes": 64406,
+      "saved_total_percent": 23.871579899333586,
+      "saved_upload_bytes": 64406,
+      "serialization_seconds": 0.0015198599999166618,
+      "serialization_timing_source": "day6_probe",
+      "server_receipt": {
+        "staleness": 0,
+        "version_after": 1,
+        "version_before": 0,
+        "weight": 0.4290449982890384
+      },
+      "total_bytes": 205396,
+      "total_parameters": 33025,
+      "upload": {
+        "index_bytes": 33028,
+        "other_bytes": 4407,
+        "payload_bytes": 70463,
+        "value_bytes": 33028
+      }
+    },
+    "0.50": {
+      "budget": 0.5,
+      "compression_seconds": 0.007149689000016224,
+      "model_effect_verified": true,
+      "payload": {
+        "path": "/home/fadil/DSIC-2907/results/raw/b0_day6_budget_probe_seed42/messages/job_0000_budget_0.50_upload.pt",
+        "sha256": "d7c482930172cec259f388ac3920def8eedba6572507366bd7093803915212bd"
+      },
+      "per_tensor_entries": {
+        "0.bias": {
+          "retained": 64,
+          "total": 128
+        },
+        "0.weight": {
+          "retained": 12288,
+          "total": 24576
+        },
+        "3.bias": {
+          "retained": 32,
+          "total": 64
+        },
+        "3.weight": {
+          "retained": 4096,
+          "total": 8192
+        },
+        "5.bias": {
+          "retained": 1,
+          "total": 1
+        },
+        "5.weight": {
+          "retained": 32,
+          "total": 64
+        }
+      },
+      "retained_parameters": 16513,
+      "saved_total_bytes": -1642,
+      "saved_total_percent": -0.6085944507453614,
+      "saved_upload_bytes": -1642,
+      "serialization_seconds": 0.0013510860003407288,
+      "serialization_timing_source": "day6_probe",
+      "server_receipt": {
+        "staleness": 0,
+        "version_after": 1,
+        "version_before": 0,
+        "weight": 0.4290449982890384
+      },
+      "total_bytes": 271444,
+      "total_parameters": 33025,
+      "upload": {
+        "index_bytes": 66052,
+        "other_bytes": 4407,
+        "payload_bytes": 136511,
+        "value_bytes": 66052
+      }
+    },
+    "1.00": {
+      "budget": 1.0,
+      "compression_seconds": 0.0,
+      "model_effect_verified": true,
+      "payload": {
+        "path": "/home/fadil/DSIC-2907/results/raw/b0_day6_budget_probe_seed42/messages/job_0000_budget_1.00_upload.pt",
+        "sha256": "acec110a1812cfe105b73e0559d29c9aa0c21dde381f5eba55b69cda83e7cd1b"
+      },
+      "per_tensor_entries": {
+        "0.bias": {
+          "retained": 128,
+          "total": 128
+        },
+        "0.weight": {
+          "retained": 24576,
+          "total": 24576
+        },
+        "3.bias": {
+          "retained": 64,
+          "total": 64
+        },
+        "3.weight": {
+          "retained": 8192,
+          "total": 8192
+        },
+        "5.bias": {
+          "retained": 1,
+          "total": 1
+        },
+        "5.weight": {
+          "retained": 64,
+          "total": 64
+        }
+      },
+      "retained_parameters": 33025,
+      "saved_total_bytes": 0,
+      "saved_total_percent": 0.0,
+      "saved_upload_bytes": 0,
+      "serialization_seconds": 0.002496156999768573,
+      "serialization_timing_source": "saved_day5_arrival",
+      "server_receipt": {
+        "staleness": 0,
+        "version_after": 1,
+        "version_before": 0,
+        "weight": 0.4290449982890384
+      },
+      "total_bytes": 269802,
+      "total_parameters": 33025,
+      "upload": {
+        "index_bytes": 0,
+        "other_bytes": 2769,
+        "payload_bytes": 134869,
+        "value_bytes": 132100
+      }
+    }
+  },
+  "application_frame_bytes": 0,
+  "byte_boundary": "serialized_application_message",
+  "download_bytes": 134933,
+  "operator": "magnitude_topk",
+  "private_process_pool_ipc_bytes": null,
+  "schema_version": 1,
+  "source": {
+    "configuration": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day5_seed42/configuration.json",
+      "sha256": "0d67e90775968d172954b214f9595fe02df0bdbed8d27f5da2ad25f2671ee923"
+    },
+    "download": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day5_seed42/messages/job_0000_download.pt",
+      "sha256": "30f255e7380e3dc8dbf1301b61345785c79fab49bff160fafa90351d142140f6"
+    },
+    "events": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day5_seed42/events.jsonl",
+      "sha256": "2fc85dca07461bb9b37e41e427838407998fb91843acce24c35dcabba24d317f"
+    },
+    "job_id": "job_0000",
+    "local_train_seconds": 2.1411682110001493,
+    "upload": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day5_seed42/messages/job_0000_upload.pt",
+      "sha256": "acec110a1812cfe105b73e0559d29c9aa0c21dde381f5eba55b69cda83e7cd1b"
+    }
+  },
+  "sparse_format_version": 1
+}

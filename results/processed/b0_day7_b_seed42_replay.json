@@ -1,0 +1,103 @@
+{
+  "accepted_updates": 30,
+  "events_sha256": "313f2d7cfea6e18fdd7415462959d57869a4028c1acd4ceef70a040232d24132",
+  "final_model_matches": true,
+  "final_model_sha256": "9177bdf5b09c315e36537a74e3281fb3bafc6699cc9976d40d5f875645a0834d",
+  "serialized_download_bytes": 4047990,
+  "serialized_download_overhead_bytes": 84990,
+  "serialized_upload_bytes": 4046070,
+  "serialized_upload_overhead_bytes": 83070,
+  "staleness_summary": {
+    "clients": {
+      "client_0": {
+        "count": 1,
+        "maximum": 15,
+        "mean": 15.0,
+        "median": 15.0,
+        "minimum": 15,
+        "p95": 15.0
+      },
+      "client_1": {
+        "count": 3,
+        "maximum": 2,
+        "mean": 1.3333333333333333,
+        "median": 1.0,
+        "minimum": 1,
+        "p95": 1.9
+      },
+      "client_2": {
+        "count": 3,
+        "maximum": 1,
+        "mean": 1.0,
+        "median": 1.0,
+        "minimum": 1,
+        "p95": 1.0
+      },
+      "client_3": {
+        "count": 2,
+        "maximum": 5,
+        "mean": 5.0,
+        "median": 5.0,
+        "minimum": 5,
+        "p95": 5.0
+      },
+      "client_4": {
+        "count": 2,
+        "maximum": 1,
+        "mean": 1.0,
+        "median": 1.0,
+        "minimum": 1,
+        "p95": 1.0
+      },
+      "client_5": {
+        "count": 4,
+        "maximum": 4,
+        "mean": 2.25,
+        "median": 2.0,
+        "minimum": 1,
+        "p95": 3.6999999999999993
+      },
+      "client_6": {
+        "count": 5,
+        "maximum": 1,
+        "mean": 0.6,
+        "median": 1.0,
+        "minimum": 0,
+        "p95": 1.0
+      },
+      "client_7": {
+        "count": 3,
+        "maximum": 2,
+        "mean": 1.3333333333333333,
+        "median": 1.0,
+        "minimum": 1,
+        "p95": 1.9
+      },
+      "client_8": {
+        "count": 5,
+        "maximum": 1,
+        "mean": 0.8,
+        "median": 1.0,
+        "minimum": 0,
+        "p95": 1.0
+      },
+      "client_9": {
+        "count": 2,
+        "maximum": 2,
+        "mean": 1.5,
+        "median": 1.5,
+        "minimum": 1,
+        "p95": 1.95
+      }
+    },
+    "run": {
+      "count": 30,
+      "maximum": 15,
+      "mean": 1.9,
+      "median": 1.0,
+      "minimum": 0,
+      "p95": 5.0
+    }
+  },
+  "total_communicated_bytes": 8094060
+}

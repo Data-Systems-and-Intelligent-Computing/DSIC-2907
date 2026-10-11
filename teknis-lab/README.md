@@ -374,11 +374,11 @@ payload hashes dan merekonstruksi model akhir identik tanpa membaca raw CSV.
 Official test tidak dibuka. Full suite: 93 passed; full lint, format file Day 3,
 dan package build lulus.
 
-Artefak dan perintah: [Jurnal Day 3](../paper/docs/Jurnal/Day-3-B0-Asynchronous-Training.md).
+Ringkasan dan artefak: [Progres Minggu 1](../paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md).
 Byte fields pada pilot menghitung serialized tensor payload, belum IPC framing atau
 network transport overhead. Arrival order live bergantung pada OS; determinisme
-training lokal dan replay recorded arrival trace diuji secara terpisah. Day 4 tetap
-tahap berikutnya untuk memperluas verifikasi versioning/staleness.
+training lokal dan replay recorded arrival trace diuji secara terpisah. Verifikasi
+Day 4 untuk versioning/staleness tercatat di bawah.
 
 ## Day 4 — Server versioning dan staleness
 
@@ -440,6 +440,21 @@ accepted apply: server.global_version = v_arrival + 1
 
 Rumus, version transition, dan fixture fast/slow harus lulus. Staleness yang hanya dihitung dari timestamp tidak cukup.
 
+`Status: COMPLETE — 9 October 2026 (controlled verification)`
+
+Fixture fast/slow menghasilkan `model_start_version` 0/1/0, `server_version`
+arrival 0/1/2, dan staleness 0/0/2. Accepted apply menaikkan version 0→1→2→3;
+invalid tensor dicatat sebagai rejected arrival dengan staleness 0 tanpa
+mengubah model atau version. Summary schema 2 menghitung staleness accepted
+updates per run dan client (count/minimum/mean/median/p95/maximum), termasuk
+client tanpa update. Replay memverifikasi arrival, apply, dan version history;
+schema 1 Day 3 tetap dapat direplay tanpa mengubah artefaknya. Trace lama
+memiliki 30 accepted updates, staleness 0–13, dan final model identik.
+
+Full suite: 96 passed; full Ruff lint, format file Day 4, dan package build
+lulus. Receipt baru: `results/processed/b0_day4_seed42_replay.json`.
+Ringkasan dan batas bukti: [Progres Minggu 1](../paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md).
+
 ## Day 5 — Communication byte accounting
 
 ### Tujuan
@@ -500,6 +515,23 @@ Ukuran dicatat setelah serialization dan sebelum transport. Jika transport menam
 ### Quality Gate
 
 Tidak ada communication-efficiency claim sebelum actual serialized upload, download, total bytes, dan overhead tercatat serta dapat diaudit.
+
+`Status: COMPLETE — 9 October 2026 (serialized application-message boundary)`
+
+Pilot B0 seed 42 yang baru menyimpan 30 download dan 30 upload. Exact serialized
+bytes: download 4,047,990; upload 4,046,070; total 8,094,060. Tensor-value
+bytes berjumlah 3,963,000 per arah; sisanya 84,990 download dan 83,070 upload
+adalah serialization overhead termasuk header dan metadata. Application frame
+panjangnya 0. Replay schema 3 menghitung ulang per-transfer dan cumulative
+bytes dari file pesan, lalu cocok dengan manifest dan validation curve. Schema
+1/2 tetap dapat direplay.
+
+Serialization dan local training time dicatat terpisah. `transfer_seconds`
+bernilai null dengan status `unmeasured_process_pool_ipc`; private IPC envelope
+juga belum terukur. Karena itu angka di atas bukan physical-network bytes dan
+tidak dipakai untuk klaim communication saving atau bytes-to-target. Full suite:
+102 passed; Ruff lint/format dan package build lulus. Artefak dan perintah:
+[Progres Minggu 1](../paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md).
 
 ## Day 6 — Update budget 25/50/100%
 
@@ -570,6 +602,25 @@ body:   selected_indices, selected_values
 
 Ketiga action dapat direconstruct dan diterapkan dengan benar, serta byte saving aktual tersedia. Jika budget hanya mengubah label log tanpa mengubah serialized payload, tahap ini gagal.
 
+`Status: COMPLETE — 9 October 2026 (controlled operator probe)`
+
+Operator magnitude top-k memilih `ceil(qN)` per tensor, dengan tie diselesaikan
+oleh flat index terendah. Sparse payload version 1 pada probe berisi selected FP32 values,
+`int32` indices, shape/dtype, dan header; decoder memvalidasi sebelum server
+apply. Budget 100% tetap memakai pesan dense B0. Server menerima budget sparse
+hanya melalui opt-in; B0 tetap budget 100% dan local training tetap sama.
+
+Pada satu saved Day 5 delta (`job_0000`), upload 25/50/100% masing-masing
+70,463 / 136,511 / 134,869 bytes. Download yang sama 134,933 bytes;
+totalnya 205,396 / 271,444 / 269,802 bytes. Jadi budget 25% menghemat 64,406
+bytes (23.872%) dari total 100%, sedangkan budget 50% **menambah** 1,642 bytes
+(0.609%) akibat index dan metadata. Ketiga pesan berhasil direkonstruksi dan
+diterapkan ke model dari download yang sama. Ini exact serialized
+application-message bytes, bukan physical-network bytes atau hasil policy
+demand-aware. Full suite 134 tes, lint/format, build, dan replay B0 Day 3/5
+lulus. Artefak dan perintah:
+[Progres Minggu 1](../paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md).
+
 ## Day 7 — Backbone freeze
 
 ### Tujuan
@@ -626,6 +677,24 @@ Nilai yang belum diuji melalui pilot ditulis `ditentukan pada pilot`; jangan men
 ### Quality Gate
 
 Week 2 tidak boleh dimulai sebelum data/partition, async behavior, staleness, byte accounting, dan budget reconstruction seluruhnya valid.
+
+`Status: COMPLETE — 11 October 2026 (Week 1 CPU B0 backbone)`
+
+Dua B0 pilot seed 42 baru memakai konfigurasi dan source hash yang sama, serta
+initial model tensor identik. Masing-masing menerima 30 update dan replay
+memverifikasi 4,047,990 download + 4,046,070 upload = 8,094,060 serialized
+application-message bytes. Maximum staleness berbeda (12 dan 15) karena urutan
+completion async berbeda; final model tiap run cocok dengan replay-nya.
+
+[Week 1 freeze manifest](../results/processed/week1_backbone_freeze.json)
+menyimpan snapshot konfigurasi, feature-order hash, model/optimizer/aggregation,
+concurrency pilot, serialization dan operator hash, definisi evaluasi, baseline
+event-log schema, test report, serta limitasi. Verifier menolak drift hash,
+konfigurasi, initial model, schema event, replay, dan Day 6 payload. Full suite
+136 tes, Ruff, build, dan verifikasi manifest lulus. Ini freeze komponen pilot
+CPU B0; resource/network profile, main concurrency, demand/fairness mapping,
+Macro-F1 target, dan analysis plan tetap `ditentukan pada pilot` atau Day 14.
+Ringkasan: [Progres Minggu 1](../paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md).
 
 # WEEK 2 — State, Demand, and Policy Construction
 

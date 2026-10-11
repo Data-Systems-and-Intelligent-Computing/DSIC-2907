@@ -38,9 +38,9 @@ def test_fast_client_is_applied_and_redispatched_while_slow_client_is_training(t
             training_bce_by_epoch=[0.5],
             delta={name: torch.ones_like(t) for name, t in download["model_state"].items()},
         )
-        return serialize_message(update)
+        return serialize_message(update), 0.0
 
-    def applied():
+    def applied(total_bytes):
         if server.version == 2:
             release_slow.set()
 
@@ -57,15 +57,131 @@ def test_fast_client_is_applied_and_redispatched_while_slow_client_is_training(t
         )
     applies = [e for e in result["events"] if e["event"] == "apply"]
     assert [e["client_id"] for e in applies] == ["fast", "fast", "slow"]
+    assert [e["model_start_version"] for e in applies] == [0, 1, 0]
+    assert [e["version_before"] for e in applies] == [0, 1, 2]
     assert [e["version_after"] for e in applies] == [1, 2, 3]
-    assert applies[-1]["staleness"] == 2
+    assert [e["staleness"] for e in applies] == [0, 0, 2]
     assert applies[0]["budget"] == 1.0
+    arrivals = [e for e in result["events"] if e["event"] == "arrival"]
+    assert [e["model_start_version"] for e in arrivals] == [0, 1, 0]
+    assert [e["server_version"] for e in arrivals] == [0, 1, 2]
+    assert [e["staleness"] for e in arrivals] == [0, 0, 2]
+    assert result["staleness_summary"]["run"] == {
+        "count": 3,
+        "minimum": 0,
+        "mean": pytest.approx(2 / 3),
+        "median": 0.0,
+        "p95": pytest.approx(1.8),
+        "maximum": 2,
+    }
+    assert result["staleness_summary"]["clients"]["fast"]["maximum"] == 0
+    assert result["staleness_summary"]["clients"]["slow"]["maximum"] == 2
     downloads = [e for e in result["events"] if e["event"] == "download"]
     assert downloads[2]["model_start_version"] == 1
     logged = [json.loads(line) for line in (tmp_path / "events.jsonl").read_text().splitlines()]
     assert logged == result["events"]
     for event in downloads:
         assert event["download_bytes"] == len((tmp_path / event["payload_file"]).read_bytes())
+
+
+def test_staleness_summary_keeps_zero_update_client():
+    from src.b0 import summarize_staleness
+
+    result = summarize_staleness([{"client_id": "fast", "staleness": 2}], ["fast", "idle"])
+    assert result["run"]["count"] == 1
+    assert result["clients"]["fast"]["mean"] == 2.0
+    assert result["clients"]["idle"] == {
+        "count": 0,
+        "minimum": None,
+        "mean": None,
+        "median": None,
+        "p95": None,
+        "maximum": None,
+    }
+    assert json.dumps(result, allow_nan=False)
+
+
+def test_invalid_arrival_is_rejected_without_advancing_version(tmp_path):
+    from src.b0 import run_async
+
+    model = torch.nn.Linear(2, 1, bias=False)
+    before = {name: tensor.clone() for name, tensor in model.state_dict().items()}
+    server = AsyncServer(model, total_samples=2)
+
+    def invalid_train(payload, local_data, model_config, cpu_threads):
+        download = deserialize_message(payload)
+        payload = serialize_message(
+            {
+                **{
+                    key: download[key]
+                    for key in ("job_id", "client_id", "model_start_version", "training_seed")
+                },
+                "num_samples": 2,
+                "budget": 1.0,
+                "local_train_seconds": 0.0,
+                "training_bce_by_epoch": [0.5],
+                "delta": {
+                    name: torch.full_like(tensor, float("nan")) for name, tensor in before.items()
+                },
+            }
+        )
+        return payload, 0.0
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        with pytest.raises(ValueError, match="Invalid update tensor"):
+            run_async(
+                server,
+                {"client_0": (np.zeros((2, 2)), np.array([0, 1]))},
+                {},
+                {"seed": 42, "max_accepted_updates": 1, "max_concurrency": 1, "cpu_threads": 1},
+                tmp_path,
+                executor=executor,
+                train_fn=invalid_train,
+            )
+    events = [json.loads(line) for line in (tmp_path / "events.jsonl").read_text().splitlines()]
+    arrival, reject = events[1:3]
+    assert [event["event"] for event in events] == ["download", "arrival", "reject", "failure"]
+    assert (arrival["server_version"], arrival["model_start_version"], arrival["staleness"]) == (
+        0,
+        0,
+        0,
+    )
+    assert (reject["server_version"], reject["model_start_version"], reject["staleness"]) == (
+        0,
+        0,
+        0,
+    )
+    assert "Invalid update tensor" in reject["reason"]
+    assert server.version == 0
+    for name, tensor in before.items():
+        assert torch.equal(tensor, model.state_dict()[name])
+
+
+def test_unreadable_upload_is_logged_without_accepting_update(tmp_path):
+    from src.b0 import run_async
+
+    server = AsyncServer(torch.nn.Linear(2, 1), total_samples=2)
+    bad_payload = b"not a torch message"
+
+    def unreadable_train(payload, local_data, model_config, cpu_threads):
+        return bad_payload, 0.0
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        with pytest.raises(ValueError, match="Invalid serialized payload"):
+            run_async(
+                server,
+                {"client_0": (np.zeros((2, 2)), np.array([0, 1]))},
+                {},
+                {"seed": 42, "max_accepted_updates": 1, "max_concurrency": 1, "cpu_threads": 1},
+                tmp_path,
+                executor=executor,
+                train_fn=unreadable_train,
+            )
+    events = [json.loads(line) for line in (tmp_path / "events.jsonl").read_text().splitlines()]
+    assert [event["event"] for event in events] == ["download", "reject", "failure"]
+    assert events[1]["upload_bytes"] == len(bad_payload)
+    assert events[1]["cumulative_total_bytes"] == events[0]["download_bytes"] + len(bad_payload)
+    assert server.version == 0
 
 
 def test_worker_failure_is_logged_and_not_applied(tmp_path):
@@ -164,18 +280,111 @@ def test_b0_process_pilot_without_test_csv_and_exact_replay(b0_experiment):
     summary = run_b0(config_path)
     assert summary["status"] == "completed"
     assert summary["accepted_updates"] == 4
+    assert summary["schema_version"] == 3
+    assert summary["staleness_summary"]["run"]["count"] == 4
+    assert sum(stats["count"] for stats in summary["staleness_summary"]["clients"].values()) == 4
     assert summary["policy"]["update_budget"] == 1.0
     assert [v["server_version"] for v in summary["validation_curve"]] == [0, 2, 4]
     assert sum(summary["client_updates"].values()) == 4
+    assert summary["total_communicated_bytes"] == (
+        summary["serialized_download_bytes"] + summary["serialized_upload_bytes"]
+    )
+    assert summary["serialized_download_overhead_bytes"] > 0
+    assert summary["serialized_upload_overhead_bytes"] > 0
+    cumulative = [item["cumulative_total_bytes"] for item in summary["validation_curve"]]
+    assert cumulative[0] == 0
+    assert cumulative == sorted(cumulative)
+    assert cumulative[-1] == summary["total_communicated_bytes"]
+    events = [
+        json.loads(line)
+        for line in (Path(config["run_dir"]) / "events.jsonl").read_text().splitlines()
+    ]
+    transfers = [event for event in events if event["event"] in ("download", "arrival")]
+    for event in transfers:
+        payload = (Path(config["run_dir"]) / event["payload_file"]).read_bytes()
+        direction = "download_bytes" if event["event"] == "download" else "upload_bytes"
+        assert event[direction] == event["payload_bytes"] == len(payload)
+        assert event["frame_bytes"] == 0
+        assert event["tensor_value_bytes"] + event["serialization_overhead_bytes"] == len(payload)
+        assert event["serialization_seconds"] >= 0
+        assert event["transfer_seconds"] is None
+        assert event["transfer_timing_status"] == "unmeasured_process_pool_ipc"
     for reference in summary["artifacts"].values():
         pp.verify_ref(reference)
     sources["train"].unlink()  # Arrival replay depends only on the captured payloads.
-    assert replay(config["run_dir"])["final_model_matches"] is True
+    receipt = replay(config["run_dir"])
+    assert receipt["final_model_matches"] is True
+    assert receipt["staleness_summary"] == summary["staleness_summary"]
+    assert receipt["total_communicated_bytes"] == summary["total_communicated_bytes"]
+    assert (
+        receipt["serialized_download_overhead_bytes"]
+        == summary["serialized_download_overhead_bytes"]
+    )
+    assert (
+        receipt["serialized_upload_overhead_bytes"] == summary["serialized_upload_overhead_bytes"]
+    )
     before = Path(config["summary_output"]).read_bytes()
     with pytest.raises(FileExistsError):
         run_b0(config_path)
     assert Path(config["summary_output"]).read_bytes() == before
     log = Path(config["run_dir"]) / "events.jsonl"
+    manifest_path = Path(config["run_dir"]) / "manifest.json"
+    validation_path = Path(config["run_dir"]) / "validation.json"
+    original_log, original_manifest = log.read_text(), manifest_path.read_text()
+    original_validation = validation_path.read_text()
+    legacy_events = [json.loads(line) for line in original_log.splitlines()]
+    accounting_fields = (
+        "payload_bytes",
+        "frame_bytes",
+        "tensor_value_bytes",
+        "serialization_overhead_bytes",
+        "serialization_seconds",
+        "transfer_seconds",
+        "transfer_timing_status",
+        "cumulative_total_bytes",
+    )
+    for event in legacy_events:
+        if event["event"] in ("download", "arrival"):
+            for field in accounting_fields:
+                event.pop(field)
+    log.write_text("".join(json.dumps(event) + "\n" for event in legacy_events))
+    legacy_curve = pp.read_json(validation_path)
+    for observation in legacy_curve:
+        observation.pop("cumulative_total_bytes")
+    validation_path.write_text(json.dumps(legacy_curve))
+    legacy_manifest = pp.read_json(manifest_path)
+    legacy_manifest["schema_version"] = 2
+    legacy_manifest["validation_curve"] = legacy_curve
+    legacy_manifest["artifacts"]["events"] = pp.artifact_ref(log)
+    legacy_manifest["artifacts"]["validation"] = pp.artifact_ref(validation_path)
+    manifest_path.write_text(json.dumps(legacy_manifest))
+    assert replay(config["run_dir"])["final_model_matches"] is True
+    log.write_text(original_log)
+    validation_path.write_text(original_validation)
+    manifest_path.write_text(original_manifest)
+    events = [json.loads(line) for line in original_log.splitlines()]
+    first_arrival = next(event for event in events if event["event"] == "arrival")
+    first_arrival["server_version"] += 1
+    first_arrival["staleness"] += 1
+    log.write_text("".join(json.dumps(event) + "\n" for event in events))
+    manifest = pp.read_json(manifest_path)
+    manifest["artifacts"]["events"] = pp.artifact_ref(log)
+    manifest_path.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="Replay arrival version mismatch"):
+        replay(config["run_dir"])
+    log.write_text(original_log)
+    manifest_path.write_text(original_manifest)
+    events = [json.loads(line) for line in original_log.splitlines()]
+    first_download = next(event for event in events if event["event"] == "download")
+    first_download["serialization_overhead_bytes"] += 1
+    log.write_text("".join(json.dumps(event) + "\n" for event in events))
+    manifest = pp.read_json(manifest_path)
+    manifest["artifacts"]["events"] = pp.artifact_ref(log)
+    manifest_path.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="Replay message byte breakdown mismatch"):
+        replay(config["run_dir"])
+    log.write_text(original_log)
+    manifest_path.write_text(original_manifest)
     log.write_text(log.read_text() + "{}\n")
     with pytest.raises(ValueError, match="SHA256 mismatch"):
         replay(config["run_dir"])

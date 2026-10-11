@@ -1,0 +1,253 @@
+{
+  "accepted_updates": 30,
+  "aggregation_equation": "global += server_lr * (client_samples / total_train_fit) * fixed_multiplier * delta",
+  "artifacts": {
+    "configuration": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/configuration.json",
+      "sha256": "36c38c5dcdc9ec1b2449e42ffe89987b0b26c7f09158afecb61e418de7dda71f"
+    },
+    "events": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/events.jsonl",
+      "sha256": "aed35a48df7ef6b1db8a2ef39c14e4083ce7f6bf5abd7655230daf4ffd858b25"
+    },
+    "final_model": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/model.pt",
+      "sha256": "1c653a65065ef1bea6a02c0fa968c5dacd3566e238323cda58b68b2fc765f948"
+    },
+    "initial_model": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/initial.pt",
+      "sha256": "4a8cc4dd6572d0cee4d7b682a3e31330b1d34b3538b4821177c2b29a4bcee77d"
+    },
+    "validation": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/validation.json",
+      "sha256": "88ea5118a7cf1f4fc35a795b94f16dcb38e0de00aa238254a5793705ade180f3"
+    },
+    "version_history": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/version_history.json",
+      "sha256": "1479d7aeab5a93bc25716e9e8337f102cb460fc1883c5f0a74a807de1c073ada"
+    }
+  },
+  "async_loop_wall_clock_seconds": 15.792091121999874,
+  "byte_scope": "serialized application messages include torch headers/metadata; no application frame; process-pool IPC envelope and transfer time unmeasured",
+  "checkpoints": [
+    {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/checkpoint_v25.pt",
+      "sha256": "024822cbaaa2ea28866cd37fa01e1f5f3ac42e32c8f339f82cbb8cfa3c38a40f"
+    }
+  ],
+  "client_updates": {
+    "client_0": 1,
+    "client_1": 4,
+    "client_2": 2,
+    "client_3": 1,
+    "client_4": 4,
+    "client_5": 2,
+    "client_6": 6,
+    "client_7": 4,
+    "client_8": 4,
+    "client_9": 2
+  },
+  "partition_sha256": "d918af9ad5fb0dcd2e19b3fb38e3052c740d3e0e29aa5b871a6fa3e3aef80407",
+  "pilot_wall_clock_seconds": 16.102796287000274,
+  "policy": {
+    "demand_budget": false,
+    "demand_participation": false,
+    "name": "Async-Uniform",
+    "update_budget": 1.0
+  },
+  "schema_version": 3,
+  "seed": 42,
+  "serialized_download_bytes": 4047990,
+  "serialized_download_overhead_bytes": 84990,
+  "serialized_upload_bytes": 4046070,
+  "serialized_upload_overhead_bytes": 83070,
+  "stage": "Day 3 B0 pilot",
+  "staleness_summary": {
+    "clients": {
+      "client_0": {
+        "count": 1,
+        "maximum": 12,
+        "mean": 12.0,
+        "median": 12.0,
+        "minimum": 12,
+        "p95": 12.0
+      },
+      "client_1": {
+        "count": 4,
+        "maximum": 3,
+        "mean": 2.0,
+        "median": 2.0,
+        "minimum": 1,
+        "p95": 2.8499999999999996
+      },
+      "client_2": {
+        "count": 2,
+        "maximum": 2,
+        "mean": 1.5,
+        "median": 1.5,
+        "minimum": 1,
+        "p95": 1.95
+      },
+      "client_3": {
+        "count": 1,
+        "maximum": 5,
+        "mean": 5.0,
+        "median": 5.0,
+        "minimum": 5,
+        "p95": 5.0
+      },
+      "client_4": {
+        "count": 4,
+        "maximum": 3,
+        "mean": 1.5,
+        "median": 1.0,
+        "minimum": 1,
+        "p95": 2.6999999999999993
+      },
+      "client_5": {
+        "count": 2,
+        "maximum": 4,
+        "mean": 3.0,
+        "median": 3.0,
+        "minimum": 2,
+        "p95": 3.9
+      },
+      "client_6": {
+        "count": 6,
+        "maximum": 2,
+        "mean": 0.6666666666666666,
+        "median": 0.5,
+        "minimum": 0,
+        "p95": 1.75
+      },
+      "client_7": {
+        "count": 4,
+        "maximum": 3,
+        "mean": 1.5,
+        "median": 1.0,
+        "minimum": 1,
+        "p95": 2.6999999999999993
+      },
+      "client_8": {
+        "count": 4,
+        "maximum": 2,
+        "mean": 0.75,
+        "median": 0.5,
+        "minimum": 0,
+        "p95": 1.8499999999999996
+      },
+      "client_9": {
+        "count": 2,
+        "maximum": 3,
+        "mean": 2.0,
+        "median": 2.0,
+        "minimum": 1,
+        "p95": 2.9
+      }
+    },
+    "run": {
+      "count": 30,
+      "maximum": 12,
+      "mean": 1.9,
+      "median": 1.0,
+      "minimum": 0,
+      "p95": 4.549999999999997
+    }
+  },
+  "status": "completed",
+  "total_communicated_bytes": 8094060,
+  "validation_curve": [
+    {
+      "cumulative_total_bytes": 0,
+      "elapsed_seconds": 0.30359581999982765,
+      "metrics": {
+        "accuracy": 0.3197695970800422,
+        "attack_recall": 0.0008379069085424609,
+        "auprc_average_precision": 0.6839454476211151,
+        "auroc": 0.5325846136351394,
+        "balanced_accuracy": 0.5001510963114141,
+        "confusion_matrix": [
+          [
+            11194,
+            6
+          ],
+          [
+            23849,
+            20
+          ]
+        ],
+        "macro_f1": 0.24290606510056184
+      },
+      "server_version": 0
+    },
+    {
+      "cumulative_total_bytes": 2967886,
+      "elapsed_seconds": 12.268592807999994,
+      "metrics": {
+        "accuracy": 0.740426017280219,
+        "attack_recall": 0.6342117390757886,
+        "auprc_average_precision": 0.9781243191471237,
+        "auroc": 0.9590310784909297,
+        "balanced_accuracy": 0.8004987266807515,
+        "confusion_matrix": [
+          [
+            10828,
+            372
+          ],
+          [
+            8731,
+            15138
+          ]
+        ],
+        "macro_f1": 0.7364451398544014
+      },
+      "server_version": 10
+    },
+    {
+      "cumulative_total_bytes": 5665906,
+      "elapsed_seconds": 13.164624226999877,
+      "metrics": {
+        "accuracy": 0.9349282842396418,
+        "attack_recall": 0.9992039884368846,
+        "auprc_average_precision": 0.9903212812513726,
+        "auroc": 0.9805782661162417,
+        "balanced_accuracy": 0.8985752085041566,
+        "confusion_matrix": [
+          [
+            8937,
+            2263
+          ],
+          [
+            19,
+            23850
+          ]
+        ],
+        "macro_f1": 0.920563327783118
+      },
+      "server_version": 20
+    },
+    {
+      "cumulative_total_bytes": 8094060,
+      "elapsed_seconds": 14.639817371999925,
+      "metrics": {
+        "accuracy": 0.9381219880806411,
+        "attack_recall": 0.9923331517868365,
+        "auprc_average_precision": 0.9920310040330466,
+        "auroc": 0.9836593545573159,
+        "balanced_accuracy": 0.9074612187505611,
+        "confusion_matrix": [
+          [
+            9213,
+            1987
+          ],
+          [
+            183,
+            23686
+          ]
+        ],
+        "macro_f1": 0.925419258351734
+      },
+      "server_version": 30
+    }
+  ]
+}

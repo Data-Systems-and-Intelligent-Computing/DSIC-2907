@@ -14,7 +14,7 @@ import torch
 
 from src.async_server import AsyncServer
 from src.centralized import build_model, git_metadata, predict
-from src.client import deserialize_message, serialize_message, train_client
+from src.client import deserialize_message, measure_message, serialize_message, train_client
 from src.metrics import THRESHOLD, binary_metrics
 from src.preprocess import (
     artifact_ref,
@@ -30,6 +30,37 @@ from src.preprocess import (
     verify_ref,
     write_json,
 )
+
+
+def summarize_staleness(applies, client_ids):
+    """Summarize accepted-update staleness for a run and each client."""
+
+    def stats(values):
+        if not values:
+            return {
+                "count": 0,
+                "minimum": None,
+                "mean": None,
+                "median": None,
+                "p95": None,
+                "maximum": None,
+            }
+        return {
+            "count": len(values),
+            "minimum": min(values),
+            "mean": float(np.mean(values)),
+            "median": float(np.median(values)),
+            "p95": float(np.percentile(values, 95)),
+            "maximum": max(values),
+        }
+
+    return {
+        "run": stats([event["staleness"] for event in applies]),
+        "clients": {
+            client: stats([event["staleness"] for event in applies if event["client_id"] == client])
+            for client in client_ids
+        },
+    }
 
 
 def run_async(
@@ -56,6 +87,7 @@ def run_async(
     rng = np.random.Generator(np.random.PCG64(settings["seed"]))
     client_ids = sorted(client_data)
     launched = 0
+    total_bytes = 0
     started = time.perf_counter()
     pool = (
         nullcontext(executor)
@@ -74,7 +106,7 @@ def run_async(
             events.append(entry)
 
         def dispatch():
-            nonlocal launched
+            nonlocal launched, total_bytes
             busy = {job["client_id"] for job in active.values()}
             eligible = [client for client in client_ids if client not in busy]
             client_id = eligible[int(rng.integers(len(eligible)))]
@@ -90,16 +122,25 @@ def run_async(
                 "model_start_version": server.version,
                 "training_seed": training_seed,
             }
+            serialization_started = time.perf_counter()
             payload = serialize_message({**job, "model_state": server.model.state_dict()})
+            serialization_seconds = time.perf_counter() - serialization_started
+            measured = measure_message(payload, server.model.state_dict())
             path = messages / f"{job_id}_download.pt"
             with path.open("xb") as stream:
                 stream.write(payload)
+            total_bytes += len(payload)
             record(
                 "download",
                 **job,
                 budget=1.0,
                 num_samples=len(client_data[client_id][1]),
                 download_bytes=len(payload),
+                **measured,
+                serialization_seconds=serialization_seconds,
+                transfer_seconds=None,
+                transfer_timing_status="unmeasured_process_pool_ipc",
+                cumulative_total_bytes=total_bytes,
                 payload_file=str(path.relative_to(run_dir)),
                 payload_sha256=sha256(path),
             )
@@ -118,27 +159,68 @@ def run_async(
             while active:
                 future, arrival_time = arrivals.get()
                 job = active.pop(future)
-                payload = future.result()
+                payload, serialization_seconds = future.result()
+                if not isinstance(payload, bytes) or not isinstance(
+                    serialization_seconds, (int, float)
+                ):
+                    raise ValueError("Worker must return serialized bytes and serialization time")
+                if not np.isfinite(serialization_seconds) or serialization_seconds < 0:
+                    raise ValueError("Invalid upload serialization time")
                 path = messages / f"{job['job_id']}_upload.pt"
                 with path.open("xb") as stream:
                     stream.write(payload)
-                update = deserialize_message(payload)
-                if any(update[key] != value for key, value in job.items()):
-                    raise ValueError("Worker update identity differs from its download")
-                if update["num_samples"] != len(client_data[job["client_id"]][1]):
-                    raise ValueError("Worker sample count differs from frozen client data")
+                total_bytes += len(payload)
+                staleness = server.version - job["model_start_version"]
+                if staleness < 0:
+                    raise ValueError("Arrival model_start_version is in the future")
+                try:
+                    update = deserialize_message(payload)
+                    if any(update[key] != value for key, value in job.items()):
+                        raise ValueError("Worker update identity differs from its download")
+                    if update["num_samples"] != len(client_data[job["client_id"]][1]):
+                        raise ValueError("Worker sample count differs from frozen client data")
+                    measured = measure_message(payload, update["delta"])
+                except (ValueError, KeyError, TypeError) as exc:
+                    record(
+                        "reject",
+                        **job,
+                        server_version=server.version,
+                        staleness=staleness,
+                        upload_bytes=len(payload),
+                        payload_file=str(path.relative_to(run_dir)),
+                        payload_sha256=sha256(path),
+                        cumulative_total_bytes=total_bytes,
+                        reason=f"{type(exc).__name__}: {exc}",
+                    )
+                    raise
                 record(
                     "arrival",
                     **job,
                     arrival_elapsed_seconds=arrival_time,
                     server_version=server.version,
+                    staleness=staleness,
                     upload_bytes=len(payload),
+                    **measured,
+                    serialization_seconds=serialization_seconds,
+                    transfer_seconds=None,
+                    transfer_timing_status="unmeasured_process_pool_ipc",
+                    cumulative_total_bytes=total_bytes,
                     payload_file=str(path.relative_to(run_dir)),
                     payload_sha256=sha256(path),
                     local_train_seconds=update["local_train_seconds"],
                     training_bce_by_epoch=update["training_bce_by_epoch"],
                 )
-                receipt = server.apply_update(update, job["model_start_version"])
+                try:
+                    receipt = server.apply_update(update, job["model_start_version"])
+                except ValueError as exc:
+                    record(
+                        "reject",
+                        **job,
+                        server_version=server.version,
+                        staleness=staleness,
+                        reason=f"{type(exc).__name__}: {exc}",
+                    )
+                    raise
                 record(
                     "apply",
                     **job,
@@ -147,11 +229,16 @@ def run_async(
                     num_samples=update["num_samples"],
                 )
                 if on_apply is not None:
-                    on_apply()
+                    on_apply(total_bytes)
                 if launched < settings["max_accepted_updates"]:
                     dispatch()
         except Exception as exc:
-            record("failure", server_version=server.version, error=f"{type(exc).__name__}: {exc}")
+            record(
+                "failure",
+                server_version=server.version,
+                cumulative_total_bytes=total_bytes,
+                error=f"{type(exc).__name__}: {exc}",
+            )
             raise
     return {
         "events": events,
@@ -161,8 +248,18 @@ def run_async(
             client: sum(e["event"] == "apply" and e["client_id"] == client for e in events)
             for client in client_ids
         },
+        "staleness_summary": summarize_staleness(
+            [event for event in events if event["event"] == "apply"], client_ids
+        ),
         "serialized_download_bytes": sum(e.get("download_bytes", 0) for e in events),
         "serialized_upload_bytes": sum(e.get("upload_bytes", 0) for e in events),
+        "total_communicated_bytes": total_bytes,
+        "serialized_download_overhead_bytes": sum(
+            e["serialization_overhead_bytes"] for e in events if e["event"] == "download"
+        ),
+        "serialized_upload_overhead_bytes": sum(
+            e["serialization_overhead_bytes"] for e in events if e["event"] == "arrival"
+        ),
     }
 
 
@@ -291,10 +388,18 @@ def run_b0(config_path):
             "SeedSequence([run_seed, sorted_client_index, global_dispatch_index])"
             ".generate_state(1)[0]"
         ),
-        "protocol_status": "Day 3 pilot; not main-experiment freeze",
+        "protocol_status": "B0 CPU pilot; not main-experiment freeze",
         "transport": (
-            "local process-pool IPC; serialized tensor payload bytes exclude IPC/framing overhead"
+            "serialized application messages include torch headers/metadata; no application frame; "
+            "process-pool IPC envelope and transfer time unmeasured"
         ),
+        "byte_accounting": {
+            "boundary": "serialized_application_message",
+            "application_frame_bytes": 0,
+            "ipc_envelope": "unmeasured",
+            "transfer_timing": "unmeasured_process_pool_ipc",
+            "tensor_value_bytes": "sum of dense tensor numel * element_size",
+        },
         "preprocessing_manifest": artifact_ref(config["preprocessing_manifest"]),
         "partition_manifest": artifact_ref(config["partition_manifest"]),
         "dataset_manifest": pre["dataset_manifest"],
@@ -326,7 +431,7 @@ def run_b0(config_path):
     curve, checkpoints = [], []
     started = time.perf_counter()
 
-    def evaluate():
+    def evaluate(cumulative_total_bytes):
         metrics = binary_metrics(
             validation[1], predict(model, validation[0], local_config["batch_size"])
         )
@@ -334,23 +439,24 @@ def run_b0(config_path):
             {
                 "server_version": server.version,
                 "elapsed_seconds": time.perf_counter() - started,
+                "cumulative_total_bytes": cumulative_total_bytes,
                 "metrics": metrics,
             }
         )
 
-    def applied():
+    def applied(cumulative_total_bytes):
         if server.version % fl["evaluation_every_accepted_updates"] == 0:
-            evaluate()
+            evaluate(cumulative_total_bytes)
         if server.version % fl["checkpoint_every_accepted_updates"] == 0:
             path = run_dir / f"checkpoint_v{server.version}.pt"
             torch.save({"model_state": model.state_dict(), "server_version": server.version}, path)
             checkpoints.append(artifact_ref(path))
 
     try:
-        evaluate()
+        evaluate(0)
         result = run_async(server, client_data, local_config, settings, run_dir, on_apply=applied)
         if curve[-1]["server_version"] != server.version:
-            evaluate()
+            evaluate(result["total_communicated_bytes"])
         torch.save(
             {"model_state": model.state_dict(), "server_version": server.version},
             run_dir / "model.pt",
@@ -359,7 +465,7 @@ def run_b0(config_path):
         history = [event for event in result["events"] if event["event"] == "apply"]
         write_json(run_dir / "version_history.json", history)
         summary = {
-            "schema_version": 1,
+            "schema_version": 3,
             "status": "completed",
             "stage": "Day 3 B0 pilot",
             "seed": config["seed"],
@@ -368,10 +474,14 @@ def run_b0(config_path):
             "aggregation_equation": snapshot["aggregation_equation"],
             "accepted_updates": result["accepted_updates"],
             "client_updates": result["client_updates"],
+            "staleness_summary": result["staleness_summary"],
             "async_loop_wall_clock_seconds": result["wall_clock_seconds"],
             "pilot_wall_clock_seconds": time.perf_counter() - started,
             "serialized_download_bytes": result["serialized_download_bytes"],
             "serialized_upload_bytes": result["serialized_upload_bytes"],
+            "total_communicated_bytes": result["total_communicated_bytes"],
+            "serialized_download_overhead_bytes": result["serialized_download_overhead_bytes"],
+            "serialized_upload_overhead_bytes": result["serialized_upload_overhead_bytes"],
             "byte_scope": snapshot["transport"],
             "validation_curve": curve,
             "checkpoints": checkpoints,
@@ -412,6 +522,9 @@ def replay(run_dir):
     summary = read_json(run_dir / "manifest.json")
     if summary["status"] != "completed":
         raise ValueError("Only completed B0 pilots can be replayed")
+    schema_version = summary["schema_version"]
+    if schema_version not in (1, 2, 3):
+        raise ValueError("Unsupported B0 summary schema")
     paths = {name: verify_ref(ref) for name, ref in summary["artifacts"].items()}
     for reference in summary["checkpoints"]:
         verify_ref(reference)
@@ -426,8 +539,28 @@ def replay(run_dir):
         settings["server_learning_rate"],
         settings["fixed_staleness_multiplier"],
     )
-    downloads, uploads = {}, {}
+    downloads, arrivals, uploads, applies = {}, {}, {}, []
     upload_bytes = download_bytes = 0
+    download_overhead_bytes = upload_overhead_bytes = 0
+    cumulative_total_bytes = 0
+    bytes_at_version = {0: 0}
+
+    def verify_accounting(event, measured):
+        if schema_version != 3:
+            return
+        if any(event[key] != value for key, value in measured.items()):
+            raise ValueError("Replay message byte breakdown mismatch")
+        seconds = event["serialization_seconds"]
+        if (
+            isinstance(seconds, bool)
+            or not isinstance(seconds, (int, float))
+            or not np.isfinite(seconds)
+            or seconds < 0
+            or event["transfer_seconds"] is not None
+            or event["transfer_timing_status"] != "unmeasured_process_pool_ipc"
+        ):
+            raise ValueError("Replay transfer timing scope mismatch")
+
     for line in paths["events"].read_text(encoding="utf-8").splitlines():
         event = json.loads(line)
         job = event.get("job_id")
@@ -441,6 +574,8 @@ def replay(run_dir):
                 if message[key] != event[key]:
                     raise ValueError("Replay payload/event identity mismatch")
             if event["event"] == "download":
+                if job in downloads:
+                    raise ValueError("Replay duplicate download job")
                 if message["model_start_version"] != server.version:
                     raise ValueError("Replay download version mismatch")
                 if any(
@@ -451,27 +586,70 @@ def replay(run_dir):
                 downloads[job] = event
                 if event["download_bytes"] != len(payload):
                     raise ValueError("Replay download byte count mismatch")
+                measured = measure_message(payload, message["model_state"])
+                verify_accounting(event, measured)
+                download_overhead_bytes += measured["serialization_overhead_bytes"]
                 download_bytes += len(payload)
             else:
-                if job not in downloads or message["num_samples"] != downloads[job]["num_samples"]:
+                if job not in downloads or job in arrivals:
+                    raise ValueError("Replay arrival does not match its dispatch")
+                if message["num_samples"] != downloads[job]["num_samples"]:
                     raise ValueError("Replay arrival does not match its dispatch")
                 if any(
                     message[key] != downloads[job][key]
                     for key in ("client_id", "model_start_version", "training_seed")
                 ):
                     raise ValueError("Replay arrival identity mismatch")
+                if event["server_version"] != server.version:
+                    raise ValueError("Replay arrival version mismatch")
+                staleness = server.version - event["model_start_version"]
+                if staleness < 0 or (schema_version == 2 and event["staleness"] != staleness):
+                    raise ValueError("Replay arrival staleness mismatch")
                 if event["upload_bytes"] != len(payload):
                     raise ValueError("Replay upload byte count mismatch")
+                measured = measure_message(payload, message["delta"])
+                verify_accounting(event, measured)
+                upload_overhead_bytes += measured["serialization_overhead_bytes"]
                 upload_bytes += len(payload)
+                arrivals[job] = {**event, "staleness": staleness}
                 uploads[job] = message
+            cumulative_total_bytes += len(payload)
+            if schema_version == 3 and event["cumulative_total_bytes"] != cumulative_total_bytes:
+                raise ValueError("Replay cumulative byte count mismatch")
         elif event["event"] == "apply":
+            if job not in arrivals or job not in uploads:
+                raise ValueError("Replay apply has no matching arrival")
+            arrival = arrivals.pop(job)
+            if (
+                any(
+                    event[key] != arrival[key]
+                    for key in (
+                        "job_id",
+                        "client_id",
+                        "model_start_version",
+                        "training_seed",
+                        "staleness",
+                    )
+                )
+                or event["version_before"] != arrival["server_version"]
+            ):
+                raise ValueError("Replay apply/arrival version or identity mismatch")
             message = uploads.pop(job)
             receipt = server.apply_update(message, event["model_start_version"])
             if any(event[key] != value for key, value in receipt.items()):
                 raise ValueError("Replay version/staleness/weight differs from recorded apply")
+            applies.append(event)
+            downloads.pop(job)
+            bytes_at_version[server.version] = cumulative_total_bytes
+        else:
+            raise ValueError("Replay unexpected event in completed run")
+    if read_json(paths["version_history"]) != applies:
+        raise ValueError("Replay version history differs from event log")
     final = torch.load(paths["final_model"], map_location="cpu", weights_only=True)
     if (
-        uploads
+        downloads
+        or arrivals
+        or uploads
         or server.version != final["server_version"]
         or server.version != summary["accepted_updates"]
     ):
@@ -485,11 +663,35 @@ def replay(run_dir):
         summary["serialized_upload_bytes"],
     ):
         raise ValueError("Replay serialized payload totals mismatch")
+    if schema_version == 3:
+        if (
+            summary["total_communicated_bytes"] != cumulative_total_bytes
+            or summary["serialized_download_overhead_bytes"] != download_overhead_bytes
+            or summary["serialized_upload_overhead_bytes"] != upload_overhead_bytes
+        ):
+            raise ValueError("Replay byte summary mismatch")
+        curve = read_json(paths["validation"])
+        if curve != summary["validation_curve"] or any(
+            entry["cumulative_total_bytes"] != bytes_at_version[entry["server_version"]]
+            for entry in curve
+        ):
+            raise ValueError("Replay validation cumulative bytes mismatch")
+    staleness_summary = summarize_staleness(applies, sorted(summary["client_updates"]))
+    if {
+        client: stats["count"] for client, stats in staleness_summary["clients"].items()
+    } != summary["client_updates"]:
+        raise ValueError("Replay client update counts differ from completed run")
+    if schema_version >= 2 and staleness_summary != summary["staleness_summary"]:
+        raise ValueError("Replay staleness summary differs from completed run")
     return {
         "accepted_updates": server.version,
         "final_model_matches": True,
+        "staleness_summary": staleness_summary,
         "serialized_download_bytes": download_bytes,
         "serialized_upload_bytes": upload_bytes,
+        "total_communicated_bytes": cumulative_total_bytes,
+        "serialized_download_overhead_bytes": download_overhead_bytes,
+        "serialized_upload_overhead_bytes": upload_overhead_bytes,
         "events_sha256": summary["artifacts"]["events"]["sha256"],
         "final_model_sha256": summary["artifacts"]["final_model"]["sha256"],
     }

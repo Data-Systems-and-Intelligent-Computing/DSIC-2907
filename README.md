@@ -1,7 +1,8 @@
 # DSIC-2907 — Demand-Aware Adaptive Resource Allocation for Asynchronous Federated NIDS
 
 - Kode aktif: `src/preprocess.py`, `src/centralized.py`, `src/metrics.py`, `src/partition.py`,
-  `src/client.py`, `src/async_server.py`, `src/b0.py`.
+  `src/client.py`, `src/async_server.py`, `src/b0.py`, `src/compressor.py`,
+  `src/budget_probe.py`, `src/backbone_freeze.py`.
 - Konfigurasi Day 1: `configs/day1_experiments.yaml`, `configs/day1_model.yaml`.
 - Konfigurasi FL pembimbing tetap pada `configs/experiments.yaml` dan `configs/model.yaml`.
 - Hasil tetap: `results/processed/centralized_seed42_test.json`.
@@ -14,15 +15,38 @@ Seluruh 140,272 train-fit rows tercakup tepat sekali tanpa validation/test.
 Day 3 selesai: pilot B0 seed 42 menerapkan 30 update tanpa global-round barrier,
 dengan uniform idle-client dispatch, fixed local training, dan budget 100%.
 Validation Macro-F1 akhir: 0.924870; official test tidak dievaluasi.
-Replay menghasilkan final model identik. [Jurnal Day 3](paper/docs/Jurnal/Day-3-B0-Asynchronous-Training.md)
+Replay menghasilkan final model identik. [Progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md)
 mencatat konfigurasi, artefak, perintah, dan batas pengukuran.
 
-Modul demand-aware, compression, byte accounting, dan pengujian placeholder lainnya
-masih scaffold; pilot B0 belum membuktikan manfaat metode B1--B3.
+Day 4 selesai: fixture fast/slow membuktikan staleness 0, 0, 2 pada version
+arrival 0, 1, 2; rejected update tidak menaikkan server version. Replay trace
+Day 3 yang dibekukan memverifikasi 30 transisi dan staleness 0–13 tanpa
+mengubah artefak lama. [Progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md)
+mencatat receipt, summary, dan perintah verifikasinya.
+
+Day 5 selesai untuk serialized application-message accounting: pilot B0 baru
+mencatat 4,047,990 download bytes dan 4,046,070 upload bytes, total 8,094,060
+bytes. Replay memverifikasi payload, overhead, dan cumulative bytes.
+[Progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md) menjelaskan batas
+pengukuran; IPC envelope dan transfer time belum terukur.
+
+Day 6 selesai untuk operator magnitude top-k dan controlled probe pada satu
+saved Day 5 delta. Budget 25% mengirim upload 70,463 bytes dan menghemat 64,406
+bytes (23.872%) dari total upload + download 100%; budget 50% justru menambah
+1,642 bytes (0.609%). [Progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md)
+memuat payload, hash, dan rekonstruksi. B0 tetap full-budget; modul demand-aware
+dan policy B1--B3 masih scaffold.
+
+Day 7 selesai untuk Week 1 CPU B0 backbone freeze. Dua pilot ulang dengan
+konfigurasi dan initial model identik masing-masing menerima 30 update dan
+mereplay 8,094,060 serialized application-message bytes. [Freeze manifest](results/processed/week1_backbone_freeze.json)
+menyimpan hash komponen, schema event, konfigurasi, dan keputusan yang masih
+menunggu pilot/Day 14. [Progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md)
+memuat bukti dan batasnya.
 
 Repositori penelitian **DSIC-2907** untuk menguji apakah *workload* dan kondisi terkini setiap klien dapat dipakai untuk membentuk estimasi *demand*, lalu menggunakan estimasi tersebut untuk mengatur **participation priority/frequency** dan **update budget** pada *Asynchronous Federated Learning* sehingga komunikasi menjadi lebih efisien tanpa menurunkan performa *Network Intrusion Detection System* (NIDS) secara bermakna pada data *non-IID*.
 
-> **Status penelitian:** Day 1–3 selesai sampai pilot B0; pembekuan protokol eksperimen utama direncanakan pada Day 14.\
+> **Status penelitian:** Day 1–7 selesai sampai Week 1 CPU B0 backbone freeze; pembekuan protokol eksperimen utama direncanakan pada Day 14.\
 > **Backbone:** Asynchronous Federated Learning.  
 > **Dataset utama:** UNSW-NB15.  
 > **Task utama:** binary intrusion detection, `normal` vs `attack`.  
@@ -32,22 +56,26 @@ Repositori penelitian **DSIC-2907** untuk menguji apakah *workload* dan kondisi 
 > **Minimum repeated runs:** 3 seeds.  
 > **Kontribusi utama:** joint demand-conditioned participation dan update budgeting, bukan algoritma asynchronous FL baru dan bukan algoritma sparsification baru.
 
-## Laporan kegiatan terbaru — 6 Oktober 2026
+## Status terbaru — 11 Oktober 2026
 
-[Laporan harian lengkap](paper/docs/Jurnal/Laporan-Harian-2026-10-06.md)
-mencatat pekerjaan, hasil, artefak, pengujian, dan tindak lanjut hari ini.
+[Progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md) merangkum
+hasil Day 1–7 dan verifikasi terbaru.
 
 | Tahap | Status dan hasil |
 |---|---|
 | Day 1 | Prasyarat diverifikasi kembali; delapan fingerprint artefak cocok. |
 | Day 2 | Selesai: tiga partition sepuluh client, alpha 0.5, tanpa overlap/held-out rows. |
 | Day 3 | Selesai sampai pilot B0: 30 accepted updates; replay final model identik. |
-| Verifikasi akhir | 93 tes lulus; full lint, format file Day 3, dan package build lulus. |
-| Berikutnya | Day 4 — controlled versioning dan staleness verification. |
+| Day 4 | Fast/slow staleness 0/0/2, rejected update tidak menaikkan version; replay trace lama lulus. |
+| Day 5 | Pilot baru: 30 accepted updates; 4,047,990 download + 4,046,070 upload = 8,094,060 serialized bytes; replay cocok. |
+| Day 6 | Satu fixed delta: upload 25/50/100% = 70,463 / 136,511 / 134,869 bytes; seluruhnya direkonstruksi dan diterapkan. |
+| Day 7 | Dua B0 repeat identik pada input/komponen: 30 accepted updates per run, masing-masing 8,094,060 serialized bytes; replays dan freeze manifest lulus. |
+| Verifikasi akhir | 136 tes lulus; full lint, format file Day 7, package build, dua replay, dan freeze verifier lulus. |
+| Berikutnya | Day 8 — workload/state monitoring. |
 
-Hasil validation pilot B0 dan status implementasi dirinci dalam
-[jurnal Day 3](paper/docs/Jurnal/Day-3-B0-Asynchronous-Training.md).
-Official test tidak dievaluasi hari ini; accounting transport lengkap dan
+Hasil validation pilot B0 tetap dirinci dalam
+[progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md).
+Official test tidak dievaluasi pada Day 7; accounting transport jaringan dan
 perbandingan B0–B3 masih menunggu tahap selanjutnya.
 
 ---

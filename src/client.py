@@ -1,6 +1,8 @@
 """Fixed local Adam training from a downloaded state; dense full model delta."""
 
 import io
+import pickle
+import time
 
 import torch
 
@@ -14,7 +16,33 @@ def serialize_message(message):
 
 
 def deserialize_message(payload):
-    return torch.load(io.BytesIO(payload), map_location="cpu", weights_only=True)
+    if not isinstance(payload, bytes) or not payload:
+        raise ValueError("Serialized payload must be nonempty bytes")
+    try:
+        return torch.load(io.BytesIO(payload), map_location="cpu", weights_only=True)
+    except (EOFError, pickle.UnpicklingError, RuntimeError) as exc:
+        raise ValueError("Invalid serialized payload") from exc
+
+
+def measure_message(payload, tensors):
+    """Count complete B0 message bytes and the dense tensor-value portion."""
+    if not isinstance(payload, bytes) or not payload:
+        raise ValueError("Serialized payload must be nonempty bytes")
+    if (
+        not isinstance(tensors, dict)
+        or not tensors
+        or any(not isinstance(tensor, torch.Tensor) for tensor in tensors.values())
+    ):
+        raise ValueError("Message must contain dense tensors")
+    tensor_value_bytes = sum(tensor.numel() * tensor.element_size() for tensor in tensors.values())
+    if tensor_value_bytes > len(payload):
+        raise ValueError("Serialized payload is shorter than its tensor values")
+    return {
+        "payload_bytes": len(payload),
+        "frame_bytes": 0,
+        "tensor_value_bytes": tensor_value_bytes,
+        "serialization_overhead_bytes": len(payload) - tensor_value_bytes,
+    }
 
 
 class FLClient:
@@ -58,4 +86,6 @@ def train_client(download_bytes, local_data, model_config, cpu_threads):
             for key in ("job_id", "client_id", "model_start_version", "training_seed")
         }
     )
-    return serialize_message(update)
+    started = time.perf_counter()
+    payload = serialize_message(update)
+    return payload, time.perf_counter() - started

@@ -1,0 +1,351 @@
+{
+  "baseline_event_log_schema": {
+    "apply": {
+      "budget": "float",
+      "client_id": "str",
+      "elapsed_seconds": "float",
+      "event": "str",
+      "job_id": "str",
+      "model_start_version": "int",
+      "num_samples": "int",
+      "staleness": "int",
+      "training_seed": "int",
+      "version_after": "int",
+      "version_before": "int",
+      "weight": "float"
+    },
+    "arrival": {
+      "arrival_elapsed_seconds": "float",
+      "client_id": "str",
+      "cumulative_total_bytes": "int",
+      "elapsed_seconds": "float",
+      "event": "str",
+      "frame_bytes": "int",
+      "job_id": "str",
+      "local_train_seconds": "float",
+      "model_start_version": "int",
+      "payload_bytes": "int",
+      "payload_file": "str",
+      "payload_sha256": "str",
+      "serialization_overhead_bytes": "int",
+      "serialization_seconds": "float",
+      "server_version": "int",
+      "staleness": "int",
+      "tensor_value_bytes": "int",
+      "training_bce_by_epoch": "list",
+      "training_seed": "int",
+      "transfer_seconds": "null",
+      "transfer_timing_status": "str",
+      "upload_bytes": "int"
+    },
+    "download": {
+      "budget": "float",
+      "client_id": "str",
+      "cumulative_total_bytes": "int",
+      "download_bytes": "int",
+      "elapsed_seconds": "float",
+      "event": "str",
+      "frame_bytes": "int",
+      "job_id": "str",
+      "model_start_version": "int",
+      "num_samples": "int",
+      "payload_bytes": "int",
+      "payload_file": "str",
+      "payload_sha256": "str",
+      "serialization_overhead_bytes": "int",
+      "serialization_seconds": "float",
+      "tensor_value_bytes": "int",
+      "training_seed": "int",
+      "transfer_seconds": "null",
+      "transfer_timing_status": "str"
+    }
+  },
+  "configuration": {
+    "aggregation_equation": "global += server_lr * (client_samples / total_train_fit) * fixed_multiplier * delta",
+    "backbone": {
+      "aggregation": "weighted_delta",
+      "checkpoint_every_accepted_updates": 25,
+      "evaluation_every_accepted_updates": 10,
+      "max_concurrency": 3,
+      "mode": "asynchronous",
+      "num_clients": 10,
+      "staleness_weighting": "fixed"
+    },
+    "byte_accounting": {
+      "application_frame_bytes": 0,
+      "boundary": "serialized_application_message",
+      "ipc_envelope": "unmeasured",
+      "tensor_value_bytes": "sum of dense tensor numel * element_size",
+      "transfer_timing": "unmeasured_process_pool_ipc"
+    },
+    "configuration_sources": {
+      "fl_config": {
+        "path": "/home/fadil/DSIC-2907/configs/async_fl.yaml",
+        "sha256": "81048a0df7ce18007220cb5e5079af1a2d7527c645d063512e088509d6d0e84f"
+      },
+      "model_config": {
+        "path": "/home/fadil/DSIC-2907/configs/model.yaml",
+        "sha256": "342168af11ac1239d7df758375d776b09e88e9381d39f8c944e9e12f0c1a2428"
+      },
+      "policy_config": {
+        "path": "/home/fadil/DSIC-2907/configs/experiments.yaml",
+        "sha256": "acda2cd76b7d3cc6ea5febda457a23f49338608769fb823c7414a649f4eecc0d"
+      }
+    },
+    "dataset_manifest": {
+      "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/data/manifests/dataset.json",
+      "sha256": "040a1dc566f81fdacb1ccfff7b8dc77408511eeb043c57f5030ab608c1ee26b1"
+    },
+    "initialization_seed": 42,
+    "local_seed_rule": "SeedSequence([run_seed, sorted_client_index, global_dispatch_index]).generate_state(1)[0]",
+    "local_training": {
+      "batch_size": 64,
+      "dropout": 0.2,
+      "epochs": 1,
+      "hidden_dimensions": [
+        128,
+        64
+      ],
+      "learning_rate": 0.001,
+      "optimizer": "Adam"
+    },
+    "n_features": 192,
+    "package_versions": {
+      "Jinja2": "3.1.6",
+      "MarkupSafe": "3.0.3",
+      "PyYAML": "6.0.3",
+      "Pygments": "2.21.0",
+      "build": "1.6.0",
+      "cloudpickle": "3.1.2",
+      "demand-aware-async-fl-nids": "0.1.0",
+      "dsic-2907-demand-aware-async-fl-nids": "0.1.0",
+      "filelock": "3.32.3",
+      "fsspec": "2026.7.0",
+      "iniconfig": "2.3.0",
+      "joblib": "1.6.0",
+      "mpmath": "1.3.0",
+      "narwhals": "2.25.0",
+      "networkx": "3.6.1",
+      "numpy": "2.5.3",
+      "packaging": "26.3",
+      "pandas": "2.3.3",
+      "pip": "25.1.1",
+      "pluggy": "1.6.0",
+      "pyproject_hooks": "1.2.0",
+      "pytest": "9.1.1",
+      "python": "3.14.4",
+      "python-dateutil": "2.9.0.post0",
+      "pytz": "2026.3.post1",
+      "ruff": "0.16.6",
+      "scikit-learn": "1.9.0",
+      "scipy": "1.18.1",
+      "setuptools": "78.1.0",
+      "six": "1.17.0",
+      "sympy": "1.14.0",
+      "threadpoolctl": "3.6.0",
+      "torch": "2.14.0+cpu",
+      "typing_extensions": "4.16.0",
+      "tzdata": "2026.3"
+    },
+    "participation": "uniform random among idle clients; at most one job per client",
+    "partition_manifest": {
+      "path": "/home/fadil/DSIC-2907/data/partitions/partition_alpha0.5_seed42_manifest.json",
+      "sha256": "222780162553987695e4e9d8e21af8e43a5bd3d69306e7c1f3daeaf00eda6b37"
+    },
+    "partition_sha256": "d918af9ad5fb0dcd2e19b3fb38e3052c740d3e0e29aa5b871a6fa3e3aef80407",
+    "pilot_settings": {
+      "cpu_threads": 1,
+      "fixed_staleness_multiplier": 1.0,
+      "fl_config": "configs/async_fl.yaml",
+      "max_accepted_updates": 30,
+      "max_concurrency": 3,
+      "model_config": "configs/model.yaml",
+      "partition_manifest": "data/partitions/partition_alpha0.5_seed42_manifest.json",
+      "policy_config": "configs/experiments.yaml",
+      "preprocessing_manifest": "data/manifests/preprocessing.json",
+      "seed": 42,
+      "server_learning_rate": 1.0
+    },
+    "policy": {
+      "demand_budget": false,
+      "demand_participation": false,
+      "name": "Async-Uniform",
+      "update_budget": 1.0
+    },
+    "preprocessing_manifest": {
+      "path": "/home/fadil/DSIC-2907/data/manifests/preprocessing.json",
+      "sha256": "7dbcb4b7b1cf41e3b413f061e5ec6a1e6074c8ea4262c2be6b0324ab741f6f61"
+    },
+    "protocol_status": "B0 CPU pilot; not main-experiment freeze",
+    "source_files": {
+      "async_server.py": {
+        "path": "/home/fadil/DSIC-2907/src/async_server.py",
+        "sha256": "c9419beab941d864ca6933250269297e3cbe31c3e279b20729c96db1378026fe"
+      },
+      "b0.py": {
+        "path": "/home/fadil/DSIC-2907/src/b0.py",
+        "sha256": "7bc20d9500a8e422827c4dd4fa10bacafb24357bdafaeba07930a0616f7a004a"
+      },
+      "centralized.py": {
+        "path": "/home/fadil/DSIC-2907/src/centralized.py",
+        "sha256": "ecf27f546ca10c4083e4f088e923470cd9d4189dc23ac3c950c8687a755c6583"
+      },
+      "client.py": {
+        "path": "/home/fadil/DSIC-2907/src/client.py",
+        "sha256": "712fbe54d9bc54cdbeb467c87a5523f97275c4ff4d39066b70b67f93d06ec0af"
+      },
+      "metrics.py": {
+        "path": "/home/fadil/DSIC-2907/src/metrics.py",
+        "sha256": "85c81322063800a2281698f4ccd3b83714453f775700f3f3f173e05919bb1132"
+      },
+      "preprocess.py": {
+        "path": "/home/fadil/DSIC-2907/src/preprocess.py",
+        "sha256": "6f39915f14213fa5b1074db7a50fa2ee41c866c2ed602734c17a2b22b328d839"
+      }
+    },
+    "threshold": 0.5,
+    "total_train_fit": 140272,
+    "transport": "serialized application messages include torch headers/metadata; no application frame; process-pool IPC envelope and transfer time unmeasured"
+  },
+  "evaluation": {
+    "metric_names": [
+      "accuracy",
+      "attack_recall",
+      "auprc_average_precision",
+      "auroc",
+      "balanced_accuracy",
+      "confusion_matrix",
+      "macro_f1"
+    ],
+    "metric_source": {
+      "path": "/home/fadil/DSIC-2907/src/metrics.py",
+      "sha256": "85c81322063800a2281698f4ccd3b83714453f775700f3f3f173e05919bb1132"
+    },
+    "official_test_evaluated": false,
+    "positive_class": "Attack=1",
+    "threshold": 0.5
+  },
+  "feature_order": {
+    "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/data/processed/feature_names.json",
+    "sha256": "216ba228e97b4ff47b01efee862510cf1605800f22a993a548b5459bc121cd20"
+  },
+  "known_limitations": [
+    "Two seed-42 CPU B0 pilots; not a multi-seed or B0-B3 result.",
+    "Asynchronous completion order and final model bytes can differ between repeats.",
+    "Private process-pool IPC bytes and transfer time are unmeasured.",
+    "The sparse budget operator is only proven in a controlled probe, not B0 live runs.",
+    "Source hashes pin a dirty working tree; Day 14 main protocol remains open."
+  ],
+  "main_protocol_pending": {
+    "analysis_plan": "Day_14_protocol_freeze",
+    "budget_policy_and_error_feedback": "Day_8_to_14",
+    "demand_state_weights_and_thresholds": "Day_8_to_14",
+    "macro_f1_target_and_main_stopping_rules": "Day_14_protocol_freeze",
+    "network_rtt_bandwidth_profiles": "to_be_decided_at_pilot",
+    "participation_mapping_cooldown_fairness": "Day_8_to_14",
+    "resource_limits_and_main_concurrency": "to_be_decided_at_pilot"
+  },
+  "preprocessing_pipeline": {
+    "path": "/home/fadil/TA/Code/demand-aware-async-fl-nids/data/processed/pipeline.joblib",
+    "sha256": "18deb5dd264684b7ea791ddf06cb593574957ffe426dddffefb87285c4396a24"
+  },
+  "runs": [
+    {
+      "accepted_updates": 30,
+      "configuration_snapshot": {
+        "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/configuration.json",
+        "sha256": "36c38c5dcdc9ec1b2449e42ffe89987b0b26c7f09158afecb61e418de7dda71f"
+      },
+      "final_model_sha256": "1c653a65065ef1bea6a02c0fa968c5dacd3566e238323cda58b68b2fc765f948",
+      "manifest": {
+        "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42/manifest.json",
+        "sha256": "443896e7bd617d68fc37597fb2aeb88b449a9a1fbed87a97cfcf4fe9c094120e"
+      },
+      "maximum_staleness": 12,
+      "pilot_configuration": {
+        "path": "/home/fadil/DSIC-2907/configs/day7_b0_a.yaml",
+        "sha256": "97570cd5a83d8eb92392e7ef4fa25a42ca086efa0c5e21bb26d0fc986597a75e"
+      },
+      "replay_receipt": {
+        "path": "/home/fadil/DSIC-2907/results/processed/b0_day7_a_seed42_replay.json",
+        "sha256": "6f7049509e7a5ea2ac3d4d096ea1a1fb59bbee2fc8e2406eaa2791db54d4378c"
+      },
+      "run_dir": "/home/fadil/DSIC-2907/results/raw/b0_day7_a_seed42",
+      "serialized_download_bytes": 4047990,
+      "serialized_upload_bytes": 4046070,
+      "summary": {
+        "path": "/home/fadil/DSIC-2907/results/processed/b0_day7_a_seed42.json",
+        "sha256": "443896e7bd617d68fc37597fb2aeb88b449a9a1fbed87a97cfcf4fe9c094120e"
+      },
+      "total_communicated_bytes": 8094060
+    },
+    {
+      "accepted_updates": 30,
+      "configuration_snapshot": {
+        "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_b_seed42/configuration.json",
+        "sha256": "6140b981e4fb04ff59b612f8532a580011631b3043613ed7cf094e5dce120de2"
+      },
+      "final_model_sha256": "9177bdf5b09c315e36537a74e3281fb3bafc6699cc9976d40d5f875645a0834d",
+      "manifest": {
+        "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_b_seed42/manifest.json",
+        "sha256": "149839403fef86992c2fdb893e69a2fe2d323b7b8cd474f43ddeb029c7475693"
+      },
+      "maximum_staleness": 15,
+      "pilot_configuration": {
+        "path": "/home/fadil/DSIC-2907/configs/day7_b0_b.yaml",
+        "sha256": "60a74e94a80239885924cdc4a4e9023c99a5c73e682d2252d2f5e5675449e20e"
+      },
+      "replay_receipt": {
+        "path": "/home/fadil/DSIC-2907/results/processed/b0_day7_b_seed42_replay.json",
+        "sha256": "601a9182e01887bed895e0dc95f15eb8a0b9b2db70ec99be3f1fa268f3140899"
+      },
+      "run_dir": "/home/fadil/DSIC-2907/results/raw/b0_day7_b_seed42",
+      "serialized_download_bytes": 4047990,
+      "serialized_upload_bytes": 4046070,
+      "summary": {
+        "path": "/home/fadil/DSIC-2907/results/processed/b0_day7_b_seed42.json",
+        "sha256": "149839403fef86992c2fdb893e69a2fe2d323b7b8cd474f43ddeb029c7475693"
+      },
+      "total_communicated_bytes": 8094060
+    }
+  ],
+  "schema_version": 1,
+  "scope": "week1_cpu_b0_backbone_not_day14_main_protocol",
+  "serialization": {
+    "application_frame_bytes": 0,
+    "boundary": "serialized_application_message",
+    "client_source": {
+      "path": "/home/fadil/DSIC-2907/src/client.py",
+      "sha256": "712fbe54d9bc54cdbeb467c87a5523f97275c4ff4d39066b70b67f93d06ec0af"
+    },
+    "format": "torch.save_application_message"
+  },
+  "test_report": {
+    "budget_probe_payloads_verified": true,
+    "replays_match_saved_models": true,
+    "same_configuration_and_source_hashes": true,
+    "same_event_schema": true,
+    "same_initial_model_tensors": true
+  },
+  "update_operator": {
+    "budgets": [
+      0.25,
+      0.5,
+      1.0
+    ],
+    "day6_report": {
+      "path": "/home/fadil/DSIC-2907/results/processed/b0_day6_budget_probe_seed42.json",
+      "sha256": "1629950f92aa072ce426cba5f8bcd6e8580cefb821023df17c3418431cd4b7bd"
+    },
+    "name": "magnitude_topk",
+    "probe_source": {
+      "path": "/home/fadil/DSIC-2907/src/budget_probe.py",
+      "sha256": "c50f1515ece4623c0f9a0d5611a54dfe759d47e523abfbf208a83690a50105c4"
+    },
+    "source": {
+      "path": "/home/fadil/DSIC-2907/src/compressor.py",
+      "sha256": "136899239dd792d605bacb8a081763827462b12ad8af383a9d7d0d2778b5d5dd"
+    },
+    "sparse_format_version": 1
+  }
+}

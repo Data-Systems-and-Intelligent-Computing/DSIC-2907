@@ -1,0 +1,13 @@
+# Day 7 backbone repeat A; same B0 settings as Day 5, new evidence paths.
+seed: 42
+cpu_threads: 1
+max_accepted_updates: 30
+server_learning_rate: 1.0
+fixed_staleness_multiplier: 1.0
+preprocessing_manifest: data/manifests/preprocessing.json
+partition_manifest: data/partitions/partition_alpha0.5_seed42_manifest.json
+model_config: configs/model.yaml
+fl_config: configs/async_fl.yaml
+policy_config: configs/experiments.yaml
+run_dir: results/raw/b0_day7_a_seed42
+summary_output: results/processed/b0_day7_a_seed42.json

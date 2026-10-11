@@ -21,7 +21,9 @@ def test_async_apply_sample_weighting_and_stale_delta():
     torch.testing.assert_close(model.weight, torch.full((1, 2), 0.4))
 
 
-@pytest.mark.parametrize("bad", ["samples", "budget", "keys", "shape", "dtype", "nan", "future"])
+@pytest.mark.parametrize(
+    "bad", ["samples", "budget", "keys", "shape", "dtype", "nan", "future", "negative"]
+)
 def test_invalid_update_never_changes_model_or_version(bad):
     model = torch.nn.Linear(2, 1, bias=False)
     before = copy.deepcopy(model.state_dict())
@@ -40,8 +42,10 @@ def test_invalid_update_never_changes_model_or_version(bad):
         update["delta"]["weight"] = torch.ones(1, 2, dtype=torch.float64)
     elif bad == "nan":
         update["delta"]["weight"][0, 0] = float("nan")
-    else:
+    elif bad == "future":
         start = 1
+    else:
+        start = -1
     with pytest.raises(ValueError):
         server.apply_update(update, start)
     assert server.version == 0

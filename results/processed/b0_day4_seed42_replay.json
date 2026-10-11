@@ -1,0 +1,100 @@
+{
+  "accepted_updates": 30,
+  "events_sha256": "b8db108da9760020f8d43682261ed75f71a0fd0a616602f516ac9ea034c01917",
+  "final_model_matches": true,
+  "final_model_sha256": "531ec95f359d4567d9df47f856e6d9f371c9e5346c1d095ae8193f5866ebe8f3",
+  "serialized_download_bytes": 4047990,
+  "serialized_upload_bytes": 4046070,
+  "staleness_summary": {
+    "clients": {
+      "client_0": {
+        "count": 1,
+        "maximum": 13,
+        "mean": 13.0,
+        "median": 13.0,
+        "minimum": 13,
+        "p95": 13.0
+      },
+      "client_1": {
+        "count": 4,
+        "maximum": 4,
+        "mean": 2.0,
+        "median": 1.5,
+        "minimum": 1,
+        "p95": 3.6999999999999993
+      },
+      "client_2": {
+        "count": 1,
+        "maximum": 1,
+        "mean": 1.0,
+        "median": 1.0,
+        "minimum": 1,
+        "p95": 1.0
+      },
+      "client_3": {
+        "count": 2,
+        "maximum": 5,
+        "mean": 3.5,
+        "median": 3.5,
+        "minimum": 2,
+        "p95": 4.85
+      },
+      "client_4": {
+        "count": 3,
+        "maximum": 3,
+        "mean": 2.3333333333333335,
+        "median": 3.0,
+        "minimum": 1,
+        "p95": 3.0
+      },
+      "client_5": {
+        "count": 3,
+        "maximum": 3,
+        "mean": 2.3333333333333335,
+        "median": 2.0,
+        "minimum": 2,
+        "p95": 2.9
+      },
+      "client_6": {
+        "count": 6,
+        "maximum": 0,
+        "mean": 0.0,
+        "median": 0.0,
+        "minimum": 0,
+        "p95": 0.0
+      },
+      "client_7": {
+        "count": 4,
+        "maximum": 4,
+        "mean": 2.25,
+        "median": 2.0,
+        "minimum": 1,
+        "p95": 3.8499999999999996
+      },
+      "client_8": {
+        "count": 4,
+        "maximum": 1,
+        "mean": 0.5,
+        "median": 0.5,
+        "minimum": 0,
+        "p95": 1.0
+      },
+      "client_9": {
+        "count": 2,
+        "maximum": 2,
+        "mean": 1.5,
+        "median": 1.5,
+        "minimum": 1,
+        "p95": 1.95
+      }
+    },
+    "run": {
+      "count": 30,
+      "maximum": 13,
+      "mean": 1.9,
+      "median": 1.0,
+      "minimum": 0,
+      "p95": 4.549999999999997
+    }
+  }
+}
