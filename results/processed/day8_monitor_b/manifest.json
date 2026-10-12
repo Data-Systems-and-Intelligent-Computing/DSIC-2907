@@ -1,0 +1,181 @@
+{
+  "b0_replay": {
+    "accepted_updates": 30,
+    "events_sha256": "313f2d7cfea6e18fdd7415462959d57869a4028c1acd4ceef70a040232d24132",
+    "final_model_matches": true,
+    "final_model_sha256": "9177bdf5b09c315e36537a74e3281fb3bafc6699cc9976d40d5f875645a0834d",
+    "serialized_download_bytes": 4047990,
+    "serialized_download_overhead_bytes": 84990,
+    "serialized_upload_bytes": 4046070,
+    "serialized_upload_overhead_bytes": 83070,
+    "staleness_summary": {
+      "clients": {
+        "client_0": {
+          "count": 1,
+          "maximum": 15,
+          "mean": 15.0,
+          "median": 15.0,
+          "minimum": 15,
+          "p95": 15.0
+        },
+        "client_1": {
+          "count": 3,
+          "maximum": 2,
+          "mean": 1.3333333333333333,
+          "median": 1.0,
+          "minimum": 1,
+          "p95": 1.9
+        },
+        "client_2": {
+          "count": 3,
+          "maximum": 1,
+          "mean": 1.0,
+          "median": 1.0,
+          "minimum": 1,
+          "p95": 1.0
+        },
+        "client_3": {
+          "count": 2,
+          "maximum": 5,
+          "mean": 5.0,
+          "median": 5.0,
+          "minimum": 5,
+          "p95": 5.0
+        },
+        "client_4": {
+          "count": 2,
+          "maximum": 1,
+          "mean": 1.0,
+          "median": 1.0,
+          "minimum": 1,
+          "p95": 1.0
+        },
+        "client_5": {
+          "count": 4,
+          "maximum": 4,
+          "mean": 2.25,
+          "median": 2.0,
+          "minimum": 1,
+          "p95": 3.6999999999999993
+        },
+        "client_6": {
+          "count": 5,
+          "maximum": 1,
+          "mean": 0.6,
+          "median": 1.0,
+          "minimum": 0,
+          "p95": 1.0
+        },
+        "client_7": {
+          "count": 3,
+          "maximum": 2,
+          "mean": 1.3333333333333333,
+          "median": 1.0,
+          "minimum": 1,
+          "p95": 1.9
+        },
+        "client_8": {
+          "count": 5,
+          "maximum": 1,
+          "mean": 0.8,
+          "median": 1.0,
+          "minimum": 0,
+          "p95": 1.0
+        },
+        "client_9": {
+          "count": 2,
+          "maximum": 2,
+          "mean": 1.5,
+          "median": 1.5,
+          "minimum": 1,
+          "p95": 1.95
+        }
+      },
+      "run": {
+        "count": 30,
+        "maximum": 15,
+        "mean": 1.9,
+        "median": 1.0,
+        "minimum": 0,
+        "p95": 5.0
+      }
+    },
+    "total_communicated_bytes": 8094060
+  },
+  "client_ids": [
+    "client_0",
+    "client_1",
+    "client_2",
+    "client_3",
+    "client_4",
+    "client_5",
+    "client_6",
+    "client_7",
+    "client_8",
+    "client_9"
+  ],
+  "clock": "b0_log_elapsed_seconds_then_event_index",
+  "event_count": 90,
+  "inputs": {
+    "configuration": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_b_seed42/configuration.json",
+      "sha256": "6140b981e4fb04ff59b612f8532a580011631b3043613ed7cf094e5dce120de2"
+    },
+    "events": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_b_seed42/events.jsonl",
+      "sha256": "313f2d7cfea6e18fdd7415462959d57869a4028c1acd4ceef70a040232d24132"
+    },
+    "partition": {
+      "path": "/home/fadil/DSIC-2907/data/partitions/partition_alpha0.5_seed42_manifest.json",
+      "sha256": "222780162553987695e4e9d8e21af8e43a5bd3d69306e7c1f3daeaf00eda6b37"
+    },
+    "partition_rows": {
+      "path": "/home/fadil/DSIC-2907/data/partitions/partition_alpha0.5_seed42.json",
+      "sha256": "d918af9ad5fb0dcd2e19b3fb38e3052c740d3e0e29aa5b871a6fa3e3aef80407"
+    },
+    "run_manifest": {
+      "path": "/home/fadil/DSIC-2907/results/raw/b0_day7_b_seed42/manifest.json",
+      "sha256": "149839403fef86992c2fdb893e69a2fe2d323b7b8cd474f43ddeb029c7475693"
+    }
+  },
+  "monitor_source": {
+    "path": "/home/fadil/DSIC-2907/src/monitor.py",
+    "sha256": "3382a36c4657de1c354f42d53305ed13c68b1246d4f697f131d4a893f2026d3b"
+  },
+  "observation_issues": [],
+  "observation_scope": "offline_event_prefix",
+  "run_id": "/home/fadil/DSIC-2907/results/raw/b0_day7_b_seed42",
+  "schema": {
+    "path": "/home/fadil/DSIC-2907/tasks/day8-state-schema.md",
+    "sha256": "1322565e6b29a4de1a8f792176a2ab640f17c3bd389b7c1bc206460769a4c425"
+  },
+  "schema_version": 1,
+  "snapshot_count": 910,
+  "snapshots": {
+    "path": "/home/fadil/DSIC-2907/results/processed/day8_monitor_b/snapshots.jsonl",
+    "sha256": "d1b07ebb37e6b5ffea18c2eb81439c47f49adefa65c97e31cc3a4e53dd412a64"
+  },
+  "status_counts": {
+    "contribution_age_seconds": {
+      "derived": 653,
+      "never_contributed": 257
+    },
+    "last_arrival_staleness": {
+      "not_yet_observed": 247,
+      "observed": 663
+    },
+    "num_samples": {
+      "static_metadata": 910
+    },
+    "previous_local_train_seconds": {
+      "not_yet_observed": 247,
+      "observed": 663
+    },
+    "rtt_seconds": {
+      "unmeasured_process_pool_ipc": 910
+    },
+    "throughput_bytes_per_second": {
+      "unmeasured_process_pool_ipc": 910
+    }
+  }
+}

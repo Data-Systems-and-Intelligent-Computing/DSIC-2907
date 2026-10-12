@@ -764,6 +764,39 @@ action = participation level and/or update budget
 
 State vector dapat direplay dari event log dan terpisah secara eksplisit dari demand serta action.
 
+`Status: COMPLETE — 12 October 2026 (offline B0 event-prefix monitoring)`
+
+Implementasi `src/monitor.py` membaca log B0 frozen tanpa hook pada training atau
+dispatch. [Schema lengkap](../tasks/day8-state-schema.md) menetapkan sample count
+dalam samples, training duration/RTT/age dalam seconds, throughput dalam bytes/second,
+dan staleness dalam server versions. Setiap field memiliki provenance serta waktu
+observasi/availability. Waktu memakai `elapsed_seconds` log dan ordinal event;
+callback arrival yang lebih awal tidak boleh membackfill snapshot.
+
+Metadata jumlah sampel tersedia saat start-up untuk semua client. Durasi dan lag
+belum teramati bernilai null; age null sampai accepted apply pertama, lalu dihitung
+dari waktu apply itu. Rejection tidak mereset age. RTT/throughput selalu null dengan
+status `unmeasured_process_pool_ipc`; controlled network profile belum diterapkan.
+State sebelum download adalah snapshot prefix sebelumnya. Ini rekonstruksi batas
+event, bukan pengukuran timestamp tepat sebelum pemilihan client.
+
+[Bundle A](../results/processed/day8_monitor_a/manifest.json) dan
+[bundle B](../results/processed/day8_monitor_b/manifest.json) masing-masing memuat
+910 snapshot untuk 10 client pada start-up dan sesudah 90 event. Manifest mencatat
+hash sumber/output, missing/invalid counts, serta B0 replay receipt. Verifier
+menghitung ulang seluruh snapshot dan menolak drift isi/hash.
+[Gate receipt](../results/processed/day8_state_monitoring.json) mencatat 184 tes
+lulus, lint/format, source/wheel build, dan freeze verifier. Tes meliputi prefix
+invariance, availability bounds, snapshot mutation, replay tanpa raw CSV, dan
+kesamaan model/bytes/update semantics sebelum-sesudah monitoring pada trace sama.
+Source/config/event schema dan artefak Week 1 tidak berubah; demand/calibration
+serta integrasi policy live tetap menunggu tahap berikutnya.
+
+```bash
+python -m src.monitor verify --manifest results/processed/day8_monitor_a/manifest.json
+python -m src.monitor verify --manifest results/processed/day8_monitor_b/manifest.json
+```
+
 ## Day 9 — Calibration runs
 
 ### Tujuan

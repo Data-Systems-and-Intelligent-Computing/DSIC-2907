@@ -2,7 +2,7 @@
 
 - Kode aktif: `src/preprocess.py`, `src/centralized.py`, `src/metrics.py`, `src/partition.py`,
   `src/client.py`, `src/async_server.py`, `src/b0.py`, `src/compressor.py`,
-  `src/budget_probe.py`, `src/backbone_freeze.py`.
+  `src/budget_probe.py`, `src/backbone_freeze.py`, `src/monitor.py`.
 - Konfigurasi Day 1: `configs/day1_experiments.yaml`, `configs/day1_model.yaml`.
 - Konfigurasi FL pembimbing tetap pada `configs/experiments.yaml` dan `configs/model.yaml`.
 - Hasil tetap: `results/processed/centralized_seed42_test.json`.
@@ -44,9 +44,17 @@ menyimpan hash komponen, schema event, konfigurasi, dan keputusan yang masih
 menunggu pilot/Day 14. [Progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md)
 memuat bukti dan batasnya.
 
+Day 8 selesai untuk monitoring observasional offline. Kedua trace B0 Day 7
+masing-masing menghasilkan 910 snapshot (10 client, start-up + 90 event).
+[Schema state](tasks/day8-state-schema.md) mendefinisikan unit, provenance,
+availability time, dan aturan start-up/missing; [gate receipt](results/processed/day8_state_monitoring.json)
+menautkan snapshot dan verifikasi. RTT/throughput tetap null karena IPC tidak
+terukur. Snapshot memakai batas event, bukan timestamp keputusan live yang tidak
+direkam B0. Source, update semantics, dan artefak frozen B0 tetap identik.
+
 Repositori penelitian **DSIC-2907** untuk menguji apakah *workload* dan kondisi terkini setiap klien dapat dipakai untuk membentuk estimasi *demand*, lalu menggunakan estimasi tersebut untuk mengatur **participation priority/frequency** dan **update budget** pada *Asynchronous Federated Learning* sehingga komunikasi menjadi lebih efisien tanpa menurunkan performa *Network Intrusion Detection System* (NIDS) secara bermakna pada data *non-IID*.
 
-> **Status penelitian:** Day 1–7 selesai sampai Week 1 CPU B0 backbone freeze; pembekuan protokol eksperimen utama direncanakan pada Day 14.\
+> **Status penelitian:** Day 1–8 selesai sampai state monitoring offline; pembekuan protokol eksperimen utama direncanakan pada Day 14.\
 > **Backbone:** Asynchronous Federated Learning.  
 > **Dataset utama:** UNSW-NB15.  
 > **Task utama:** binary intrusion detection, `normal` vs `attack`.  
@@ -56,10 +64,11 @@ Repositori penelitian **DSIC-2907** untuk menguji apakah *workload* dan kondisi 
 > **Minimum repeated runs:** 3 seeds.  
 > **Kontribusi utama:** joint demand-conditioned participation dan update budgeting, bukan algoritma asynchronous FL baru dan bukan algoritma sparsification baru.
 
-## Status terbaru — 11 Oktober 2026
+## Status terbaru — 12 Oktober 2026
 
 [Progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md) merangkum
-hasil Day 1–7 dan verifikasi terbaru.
+hasil Day 1–7; [gate Day 8](results/processed/day8_state_monitoring.json)
+mencatat verifikasi monitoring terbaru.
 
 | Tahap | Status dan hasil |
 |---|---|
@@ -70,12 +79,13 @@ hasil Day 1–7 dan verifikasi terbaru.
 | Day 5 | Pilot baru: 30 accepted updates; 4,047,990 download + 4,046,070 upload = 8,094,060 serialized bytes; replay cocok. |
 | Day 6 | Satu fixed delta: upload 25/50/100% = 70,463 / 136,511 / 134,869 bytes; seluruhnya direkonstruksi dan diterapkan. |
 | Day 7 | Dua B0 repeat identik pada input/komponen: 30 accepted updates per run, masing-masing 8,094,060 serialized bytes; replays dan freeze manifest lulus. |
-| Verifikasi akhir | 136 tes lulus; full lint, format file Day 7, package build, dua replay, dan freeze verifier lulus. |
-| Berikutnya | Day 8 — workload/state monitoring. |
+| Day 8 | Dua bundle replay monitoring, masing-masing 910 snapshot, provenance/availability per field, aturan null eksplisit; B0 freeze tetap lulus. |
+| Verifikasi akhir | 184 tes lulus, termasuk temporal/prefix invariance dan regresi B0; Ruff lint/format, source/wheel build, serta dua bundle verification lulus. |
+| Berikutnya | Day 9 — calibration runs. |
 
 Hasil validation pilot B0 tetap dirinci dalam
 [progres Minggu 1](paper/docs/Jurnal/Minggu%201/Progres-Minggu-1.md).
-Official test tidak dievaluasi pada Day 7; accounting transport jaringan dan
+Official test tidak dievaluasi pada Day 7–8; accounting transport jaringan dan
 perbandingan B0–B3 masih menunggu tahap selanjutnya.
 
 ---
@@ -1187,7 +1197,22 @@ Implementasi operator budget/sparsification dan actual serialized byte accountin
 
 ### `src/monitor.py`
 
-Merekam event-level state, timing, action, staleness, dan communication bytes.
+Monitoring observasional dari prefix event B0: sample count, durasi training
+terakhir, historical arrival staleness, dan age sejak accepted apply. RTT dan
+throughput tetap null dengan status eksplisit. Tidak mengubah B0 atau memilih action.
+Schema, provenance, unit, timing, dan missing rules ada di
+[schema Day 8](tasks/day8-state-schema.md).
+
+Jalankan dari checkout repositori, dengan artefak B0 dan metadata partition tersedia:
+
+```bash
+python -m src.monitor replay --run-dir results/raw/b0_day7_a_seed42 --output-dir /tmp/day8-monitor-new
+python -m src.monitor verify --manifest /tmp/day8-monitor-new/manifest.json
+```
+
+Output harus direktori baru di luar source run. Bundle tersimpan:
+[run A](results/processed/day8_monitor_a/manifest.json),
+[run B](results/processed/day8_monitor_b/manifest.json).
 
 ### `src/analyze.py`
 
