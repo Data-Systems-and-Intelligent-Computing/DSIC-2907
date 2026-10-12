@@ -1,7 +1,13 @@
 """Offline, prefix-causal client observations from frozen B0 event logs."""
 
+import argparse
 import copy
+import hashlib
+import json
 import math
+from pathlib import Path
+
+from src.preprocess import artifact_ref, read_json, verify_ref, write_json
 
 UNITS = {
     "num_samples": "samples",
@@ -248,3 +254,172 @@ class StateMonitor:
                 }
             )
         return copy.deepcopy(rows)
+
+
+def _prepare_run(run_dir):
+    """Check immutable inputs; use existing B0 replay only as an audit receipt."""
+    import torch
+
+    from src.b0 import replay
+
+    run_dir = Path(run_dir).resolve()
+    summary = read_json(run_dir / "manifest.json")
+    if (
+        summary.get("schema_version") != 3
+        or summary.get("status") != "completed"
+        or summary.get("policy", {}).get("update_budget") != 1.0
+    ):
+        raise ValueError("Monitoring requires a completed schema-3 full-budget B0 run")
+    config_ref = summary["artifacts"]["configuration"]
+    config = read_json(verify_ref(config_ref))
+    if config.get("byte_accounting", {}).get("transfer_timing") != "unmeasured_process_pool_ipc":
+        raise ValueError("Unsupported B0 timing contract")
+    for refs in (config["source_files"], config["configuration_sources"]):
+        for reference in refs.values():
+            verify_ref(reference)
+    partition = read_json(verify_ref(config["partition_manifest"]))
+    if (
+        partition["partition_scope"] != "train_fit_only"
+        or partition["preprocessing_manifest"] != config["preprocessing_manifest"]
+        or partition["dataset_manifest"] != config["dataset_manifest"]
+        or partition["artifacts"]["partition"]["sha256"] != config["partition_sha256"]
+        or summary["partition_sha256"] != config["partition_sha256"]
+    ):
+        raise ValueError("Partition/configuration linkage mismatch")
+    allocated = read_json(verify_ref(partition["artifacts"]["partition"]))
+    counts = {client: record["row_count"] for client, record in partition["clients"].items()}
+    StateMonitor(counts, run_id=str(run_dir))  # Validate before arithmetic or creating output.
+    if (
+        sorted(counts) != sorted(partition["client_ids"])
+        or sorted(counts) != sorted(allocated)
+        or sorted(counts) != sorted(summary["client_updates"])
+        or any(count != len(allocated[client]) for client, count in counts.items())
+        or sum(counts.values()) != config["total_train_fit"]
+    ):
+        raise ValueError("Partition client count mismatch")
+    inputs = {
+        "run_manifest": artifact_ref(run_dir / "manifest.json"),
+        "configuration": config_ref,
+        "partition": config["partition_manifest"],
+        "partition_rows": partition["artifacts"]["partition"],
+        "events": summary["artifacts"]["events"],
+    }
+    for reference in inputs.values():
+        verify_ref(reference)
+    # B0 replay initializes a temporary model; restore the caller's CPU RNG.
+    with torch.random.fork_rng(devices=[]):
+        receipt = replay(run_dir)
+    return counts, {
+        "schema_version": 1,
+        "run_id": str(run_dir),
+        "observation_scope": "offline_event_prefix",
+        "clock": "b0_log_elapsed_seconds_then_event_index",
+        "inputs": inputs,
+        "monitor_source": artifact_ref(__file__),
+        "schema": artifact_ref(Path(__file__).resolve().parents[1] / "tasks/day8-state-schema.md"),
+        "b0_replay": receipt,
+    }
+
+
+def _invalid_constant(value):
+    raise ValueError(f"Invalid JSON constant: {value}")
+
+
+def _render_snapshots(counts, report, stream=None):
+    """Stream rows or compute their hash without writing anything during verify."""
+    state = StateMonitor(counts, run_id=report["run_id"])
+    digest = hashlib.sha256()
+    status_counts = {name: {} for name in UNITS}
+    row_count = 0
+
+    def emit():
+        nonlocal row_count
+        for row in state.snapshot():
+            payload = (json.dumps(row, sort_keys=True, allow_nan=False) + "\n").encode("utf-8")
+            digest.update(payload)
+            if stream is not None:
+                stream.write(payload)
+            row_count += 1
+            for name, field in row["fields"].items():
+                status = field["status"]
+                status_counts[name][status] = status_counts[name].get(status, 0) + 1
+
+    emit()
+    with verify_ref(report["inputs"]["events"]).open(encoding="utf-8") as events:
+        for line in events:
+            state.consume(json.loads(line, parse_constant=_invalid_constant))
+            emit()
+    if (
+        state.jobs
+        or state.failed
+        or state.rejected
+        or state.version != report["b0_replay"]["accepted_updates"]
+    ):
+        raise ValueError("Monitoring trace is not a drained completed B0 run")
+    report.update(
+        event_count=state.index,
+        snapshot_count=row_count,
+        client_ids=list(state.counts),
+        status_counts=status_counts,
+        observation_issues=state.issues,
+    )
+    return digest.hexdigest()
+
+
+def replay_monitor(run_dir, output_dir):
+    """Create independent monitoring evidence, never edit a source run."""
+    run_dir, output_dir = Path(run_dir).resolve(), Path(output_dir).resolve()
+    if output_dir == run_dir or run_dir in output_dir.parents:
+        raise ValueError("Monitoring output must be outside the B0 run")
+    if output_dir.exists():
+        raise FileExistsError("Monitoring output already exists; choose a fresh directory")
+    counts, report = _prepare_run(run_dir)
+    output_dir.mkdir(parents=True, exist_ok=False)
+    path = output_dir / "snapshots.jsonl"
+    with path.open("xb") as stream:
+        digest = _render_snapshots(counts, report, stream)
+    report["snapshots"] = {"path": str(path), "sha256": digest}
+    # Detect changed inputs during generation before certifying a bundle.
+    for reference in report["inputs"].values():
+        verify_ref(reference)
+    write_json(output_dir / "manifest.json", report)
+    return report
+
+
+def verify_monitor(manifest):
+    """Recompute snapshot bytes and report content from verified source inputs."""
+    saved = read_json(manifest)
+    for key in ("monitor_source", "schema", "snapshots"):
+        verify_ref(saved[key])
+    for reference in saved["inputs"].values():
+        verify_ref(reference)
+    counts, expected = _prepare_run(saved["run_id"])
+    digest = _render_snapshots(counts, expected)
+    if digest != saved["snapshots"]["sha256"]:
+        raise ValueError("Monitoring snapshot content differs from event replay")
+    expected["snapshots"] = saved["snapshots"]
+    if expected != saved:
+        raise ValueError("Monitoring manifest differs from current evidence")
+    return expected
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    generate = commands.add_parser("replay", help="Create a separate B0 monitoring bundle")
+    generate.add_argument("--run-dir", required=True)
+    generate.add_argument("--output-dir", required=True)
+    verify = commands.add_parser("verify", help="Recompute and verify a monitoring bundle")
+    verify.add_argument("--manifest", required=True)
+    args = parser.parse_args()
+    if args.command == "replay":
+        result = replay_monitor(args.run_dir, args.output_dir)
+        status = "created"
+    else:
+        result = verify_monitor(args.manifest)
+        status = "verified"
+    print(json.dumps({"status": status, "snapshot_count": result["snapshot_count"]}))
+
+
+if __name__ == "__main__":
+    main()
