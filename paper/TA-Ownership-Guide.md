@@ -863,7 +863,7 @@ All paths below are relative to `/home/fadil/DSIC-2907`. Source labels throughou
 
 **[S3] Day 1 documentation:** `paper/day1/README.md`, `paper/day1/tasks/plan.md`, and `paper/day1/tasks/todo.md`. Describe the completed implementation and its historical verification.
 
-**[S4] Baseline explanation:** `paper/docs/Jurnal/Day-1-Preprocessing-dan-Baseline-Terpusat.md`. Explains preparation, results, false alarms, provenance, and limitations.
+**[S4] Baseline explanation:** `paper/docs/Jurnal/Minggu 1/Progres-Minggu-1.md`. Summarizes preparation, results, false alarms, provenance, and limitations.
 
 **[S5] Recorded numerical result:** `results/processed/centralized_seed42_test.json`. Authoritative saved values for the metrics, matrix, counts, model settings, training duration, package versions, and linked artifact identities used in this guide.
 
@@ -929,7 +929,7 @@ The seed-42 CPU pilot used ten clients at alpha 0.5, three concurrent worker pro
 
 Thirty accepted updates produced version 30 and 90 download/arrival/apply events. Client 0 downloaded version 0 and was applied at version 14, after 13 other applies. Validation Macro-F1 progressed through 0.242906, 0.736445, 0.920266, and 0.924870 at versions 0, 10, 20, and 30. The official test CSV was not opened. Arrival replay verified every message hash and reconstructed tensor-identical final model weights. OS scheduling can change the arrival order of a fresh live run; replay uses the saved trace, while local-training determinism is tested separately.
 
-The full suite passed **93 tests**. Full Ruff lint, Day 3 format checks, and wheel/source builds passed. The former unused-staleness error is resolved by the implemented server receipt. The pilot records serialized tensor-payload lengths, excluding IPC/network framing overhead; complete byte accounting remains Day 5. Settings, commands, source hashes, artifacts and limitations are recorded in `paper/docs/Jurnal/Day-3-B0-Asynchronous-Training.md` and `results/processed/b0_day3_seed42.json`.
+The full suite passed **93 tests**. Full Ruff lint, Day 3 format checks, and wheel/source builds passed. The former unused-staleness error is resolved by the implemented server receipt. The pilot records serialized tensor-payload lengths, excluding IPC/network framing overhead; complete byte accounting remains Day 5. The Week 1 summary is `paper/docs/Jurnal/Minggu 1/Progres-Minggu-1.md`; the pilot result is `results/processed/b0_day3_seed42.json`.
 
 ## Updating this guide
 

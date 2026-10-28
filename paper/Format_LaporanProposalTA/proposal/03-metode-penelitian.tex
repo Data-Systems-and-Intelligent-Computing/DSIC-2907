@@ -1,0 +1,55 @@
+\chapter{Metode Penelitian}
+\label{bab:metode}
+
+\section{Jenis dan Rancangan Penelitian}
+Penelitian menggunakan eksperimen kuantitatif komparatif pada prototipe FL asinkron. Variabel perlakuan adalah aturan partisipasi klien dan aturan anggaran pembaruan. Variabel respons mencakup biaya komunikasi, waktu, staleness, pemerataan partisipasi, dan kualitas deteksi. Empat kebijakan membentuk ablasi dua tindakan pada kondisi utama UNSW-NB15, sepuluh klien, kemencengan label Dirichlet $\alpha=0{,}5$, dan sekurang-kurangnya tiga \textit{seed} berpasangan (42, 123, 2026).
+
+Fondasi B0 pada repositori telah dipakai untuk pilot, pencatatan \textit{byte} pesan aplikasi yang diserialisasi, dan pemantauan keadaan dari log peristiwa. Tahap tersebut membuktikan kesiapan sebagian perangkat eksperimen, bukan efektivitas kebijakan gabungan. Pengukur $RTT$ dan \textit{throughput} belum tersedia pada jejak B0 berbasis komunikasi antarproses; keduanya tidak boleh diisi dari waktu pelatihan atau serialisasi. Sebelum eksperimen utama, aturan pengukuran atau simulasi jaringan, normalisasi, perlakuan nilai yang belum tersedia, dan waktu pengambilan keputusan harus dijelaskan serta dibekukan.
+
+\section{Data, Praproses, dan Model}
+Penelitian memakai pembagian resmi latih dan uji UNSW-NB15 \cite{unswdata}. Label dipetakan ke normal dan serangan. Data latih dipisah lagi untuk \textit{train-fit} dan validasi; \textit{encoder}, \textit{scaler}, dan transformasi lain hanya dipasang pada \textit{train-fit}. Set uji resmi disimpan untuk evaluasi akhir setelah rancangan kebijakan dan target analisis dibekukan. Partisi sepuluh klien dibuat dari \textit{train-fit} dengan kemencengan label Dirichlet $\alpha=0{,}5$ untuk ketiga \textit{seed}. Manifest partisi memeriksa bahwa setiap baris \textit{train-fit} ditempatkan tepat sekali dan tidak ada baris validasi atau uji yang masuk ke klien.
+
+Satu model \textit{multilayer perceptron} yang sama digunakan oleh semua kebijakan. Konfigurasi kerja menetapkan dua lapisan tersembunyi berukuran 128 dan 64, \textit{dropout} 0,2, presisi FP32, Adam dengan laju belajar 0,001, \textit{batch size} 64, dan satu \textit{local epoch}. Inisialisasi, praproses, optimisasi, batas komputasi, aturan agregasi, dan penanganan staleness harus tetap sama di dalam setiap pasangan perbandingan. Perubahan kebijakan hanya boleh memengaruhi dua tindakan komunikasi yang diteliti.
+
+\section{Kebijakan Pembanding dan Metode Usulan}
+\begin{table}[ht]
+\centering
+\caption{Ablasi kebijakan pada fondasi FL asinkron yang sama}
+\label{tab:kebijakan}
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.1cm}>{\raggedright\arraybackslash}p{5.7cm}>{\raggedright\arraybackslash}p{5.7cm}}
+\toprule
+Kode & Kesempatan partisipasi & Anggaran pembaruan unggah \\
+\midrule
+B0 & Seragam, sesuai aturan dasar & Tetap 100\% \\
+B1 & Berdasarkan kebutuhan klien & Tetap 100\% \\
+B2 & Seragam, sesuai aturan dasar & Berdasarkan kebutuhan klien: 25\%, 50\%, atau 100\% \\
+B3 & Berdasarkan kebutuhan klien & Berdasarkan kebutuhan klien: 25\%, 50\%, atau 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Modul usulan membaca keadaan klien yang tersedia sebelum kesempatan berikutnya. Fitur yang dapat dipakai meliputi jumlah sampel, durasi pelatihan terakhir, $RTT$, \textit{throughput}, staleness terakhir, dan lama sejak kontribusi yang diterima. Nilai yang belum pernah diamati tetap diberi status belum tersedia; $RTT$ atau \textit{throughput} tidak diperkirakan dari besaran yang tidak mengukur transfer jaringan. Data kalibrasi digunakan untuk menetapkan skala fitur, arah pengaruhnya, bobot skor, dan ambang kategori rendah, sedang, atau tinggi. Rumus dan penanganan nilai kosong harus deterministik dan dibekukan sebelum eksperimen utama, bersama catatan keadaan $\rightarrow$ skor $\rightarrow$ tindakan untuk setiap keputusan. Label uji dan metrik uji resmi tidak masuk ke masukan modul.
+
+Tindakan partisipasi direncanakan sebagai prioritas atau jeda kelayakan berdasar peristiwa pembaruan server, dengan batas masa tidak aktif untuk mencegah klien terus terabaikan. Nilai batas akhir dipilih melalui kalibrasi dan pilot, lalu dibekukan. Tindakan anggaran memakai \textit{magnitude top-k} pada perubahan parameter yang diunggah; operator, serialisasi, dan aturan rekonstruksi sama pada B2 dan B3. Unduhan model tetap dihitung dalam biaya komunikasi. Eksperimen pendahuluan perlu memeriksa bahwa pilihan 50\% benar-benar menghasilkan ukuran pesan yang sesuai, sebab indeks elemen dapat menghapus penghematan yang tampak dari kepadatan tensor.
+
+\section{Tahapan Eksperimen}
+\begin{enumerate}
+  \item \textbf{Verifikasi fondasi:} periksa pembagian data, pelatihan terpusat sebagai pemeriksaan kewajaran, penerapan pembaruan saat tiba, perhitungan staleness, rekonstruksi pesan, dan akuntansi \textit{byte}. Hasil pilot B0 dipakai untuk memeriksa instrumen, bukan untuk menyimpulkan kebijakan B3.
+  \item \textbf{Kalibrasi keadaan dan kebijakan:} rekam fitur yang tersedia pada saat keputusan, tetapkan aturan pengukuran jaringan, normalisasi, skor kebutuhan, ambang tindakan, dan batas masa tidak aktif. Pilihan dibuat tanpa melihat set uji resmi.
+  \item \textbf{Pilot ablasi:} jalankan B0--B3 pada satu \textit{seed} dan satu profil jaringan. Periksa bahwa B1 hanya mengubah partisipasi, B2 hanya mengubah anggaran, dan B3 memakai keduanya. Periksa pula kesesuaian rekonstruksi, log peristiwa, dan kualitas validasi.
+  \item \textbf{Pembekuan protokol:} simpan konfigurasi, \textit{seed}, partisi, versi kode, profil jaringan, tingkat konkurensi, aturan penghentian, interval evaluasi, target \textit{Macro-F1}, dan rencana analisis beserta \textit{hash}. Sesudahnya, eksperimen utama tidak diubah berdasarkan hasil yang terlihat.
+  \item \textbf{Eksperimen utama:} jalankan B0--B3 pada ketiga \textit{seed} dengan pasangan partisi, inisialisasi, batas komputasi, dan profil jaringan yang setara. Profil normal menjadi kondisi utama; profil jaringan heterogen digunakan untuk analisis pengaruh kondisi sistem setelah rancangan utama stabil. Urutan kedatangan asinkron dicatat karena dapat berbeda meskipun profil sama.
+  \item \textbf{Analisis akhir:} hitung respons per \textit{run}, bandingkan kebijakan secara berpasangan, audit kasus kegagalan, lalu evaluasi set uji resmi sekali sesuai protokol yang dibekukan.
+\end{enumerate}
+
+\section{Metrik dan Analisis Data}
+Untuk setiap pesan $m$, ukuran komunikasi adalah $|\mathrm{serialize}(m)|$ \textit{byte}. Biaya total ialah jumlah ukuran pesan unggah dan unduh, termasuk nilai, indeks, header, serta metadata yang diserialisasi. Biaya ini adalah \emph{pesan aplikasi}; bila overhead transport ingin diklaim, ia harus diukur terpisah. Ukuran primer adalah total \textit{byte} dan \textit{bytes-to-target}, yaitu biaya kumulatif pertama ketika \textit{Macro-F1} validasi mencapai target $\theta$ yang telah dibekukan:
+\begin{equation}
+  B_{\theta}=\min\{B(v): F1_{\mathrm{macro,val}}(v)\geq\theta\}.
+\end{equation}
+\textit{Time-to-target} didefinisikan secara sepadan dari waktu berjalan. Run yang tidak mencapai $\theta$ harus dilaporkan sebagai tidak mencapai target beserta batas pengamatan, bukan diberi nilai nol atau dikeluarkan diam-diam. Ukuran lain meliputi jumlah pembaruan yang diterima, distribusi staleness, bagian kontribusi tiap klien, masa tidak aktif maksimum, \textit{recall} serangan, AUPRC, serta waktu serialisasi dan kompresi.
+
+Perbandingan dilakukan pada unit \textit{run/seed}, bukan menganggap semua pembaruan dalam satu \textit{run} sebagai sampel independen. Selisih B3--B0 dan ablasi B1/B2 dilaporkan per \textit{seed}, dengan rerata dan sebaran. Sasaran praktis awal yang tercatat adalah pengurangan biaya komunikasi 15\%, penurunan \textit{Macro-F1} akhir tidak lebih dari satu poin persentase, dan pemburukan \textit{time-to-target} tidak lebih dari 10\%; definisi operasional dan titik evaluasinya akan dibekukan sebelum eksperimen utama. Untuk pengujian \textit{non-inferiority}, margin \textit{Macro-F1} adalah $\delta=0{,}01$ pada selisih B3--B0; kriteria yang direncanakan ialah batas bawah interval kepercayaan 95\% selisih tersebut lebih besar dari $-0{,}01$. Tiga \textit{seed} memberi ketidakpastian besar, sehingga seluruh selisih mentah harus ditampilkan dan klaim statistik dibatasi oleh daya yang tersedia. Grafik biaya kumulatif terhadap kualitas dan waktu serta audit partisipasi dipakai untuk menjelaskan perbedaan kebijakan.
+
+\section{Validitas dan Keterulangan}
+Risiko utama meliputi kebocoran informasi uji ke kalibrasi, ketidaksamaan kondisi antar kebijakan, simulasi \textit{non-IID} yang tidak mewakili institusi nyata, dan perbedaan antara \textit{byte} pesan aplikasi dengan penggunaan jaringan sesungguhnya. Setiap run menyimpan konfigurasi, manifest data dan partisi, versi perangkat lunak, log peristiwa, ukuran pesan, keluaran validasi, dan \textit{hash} artefak. Klaim penghematan hanya dibuat untuk biaya yang benar-benar terukur; laporan akhir harus menyebutkan secara eksplisit jika profil jaringan atau overhead transport belum berhasil diukur.

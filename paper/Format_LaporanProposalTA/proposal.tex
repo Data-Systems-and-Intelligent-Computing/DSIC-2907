@@ -1,0 +1,64 @@
+% !TeX program = pdflatex
+% Draf seminar proposal. Isi identitas dan persetujuan resmi sebelum pengajuan.
+\documentclass[12pt,a4paper,onecolumn,oneside,final]{report}
+\input{config/if-itb-thesis.sty}
+\ifproposalbiblatex
+  \addbibresource{proposal-references.bib}
+\fi
+
+\title{Optimasi Komunikasi Federated Learning Asinkron untuk Network Intrusion Detection melalui Demand-Aware Adaptive Resource Allocation pada Data Non-IID}
+\author{Muhammad Fadil Alfaizi}
+\nim{123450115}
+\date{2026}
+
+\begin{document}
+\sloppy
+\setlength{\headheight}{15pt}
+\pagenumbering{gobble}
+\begin{titlepage}
+  \centering
+  \includegraphics[width=2.1cm]{figures/itera-logo.png}\par
+  \vspace{1.8cm}
+  {\large\bfseries \MakeUppercase{\thetitle}\par}
+  \vfill
+  {\large\bfseries LAPORAN PROPOSAL TUGAS AKHIR\par}
+  \vspace{0.8cm}
+  Disusun untuk Seminar Proposal Tugas Akhir\par
+  \vfill
+  \theauthor\par
+  NIM \printnim\par
+  \vfill
+  {\bfseries Program Studi Sains Data\par
+  Fakultas Sains\par
+  Institut Teknologi Sumatera\par
+  Lampung Selatan\par}
+  \vspace{0.8cm}
+  \thedate\par
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+\renewcommand{\chaptername}{BAB}
+\renewcommand{\tablename}{Tabel}
+\renewcommand{\figurename}{Gambar}
+\renewcommand{\thechapter}{\Roman{chapter}}
+\renewcommand{\thesection}{\arabic{chapter}.\arabic{section}}
+\justifying
+
+\input{proposal/01-pendahuluan.tex}
+\input{proposal/02-tinjauan-pustaka.tex}
+\input{proposal/03-metode-penelitian.tex}
+
+\clearpage
+\renewcommand{\bibname}{Daftar Pustaka}
+\phantomsection
+\addcontentsline{toc}{chapter}{Daftar Pustaka}
+\ifproposalbiblatex
+  \printbibliography
+\else
+  \bibliographystyle{ieeetr}
+  \bibliography{proposal-references}
+\fi
+\end{document}

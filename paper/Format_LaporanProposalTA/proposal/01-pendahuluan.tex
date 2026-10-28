@@ -1,0 +1,33 @@
+\chapter{Pendahuluan}
+\label{bab:pendahuluan}
+
+\section{Latar Belakang}
+Sistem deteksi intrusi jaringan (\textit{network intrusion detection system}, NIDS) mempelajari pola lalu lintas untuk membedakan aktivitas normal dan serangan. Data jaringan dapat tersebar di beberapa lokasi dengan distribusi dan kapasitas yang berbeda. \textit{Federated learning} (FL) memungkinkan klien melatih model secara lokal dan mengirim informasi model untuk membentuk model bersama, tanpa memindahkan seluruh data latih mentah ke server \cite{mcmahan2017,agrawal2021}. Akan tetapi, pertukaran model yang berulang menimbulkan biaya komunikasi. Dalam penggunaan FL untuk deteksi intrusi, efisiensi komunikasi harus dinilai bersama kualitas deteksi, terutama kemampuan mengenali serangan.
+
+Pada FL asinkron, server dapat menerapkan pembaruan yang tiba tanpa menunggu seluruh klien. Cara ini mengurangi keharusan sinkronisasi, tetapi pembaruan dari klien yang lebih lambat dapat dihitung dari versi model yang sudah tertinggal \cite{xie2019}. Selain itu, klien yang cepat dapat lebih sering berkontribusi, sedangkan klien lain jarang memperoleh kesempatan. Kondisi tersebut penting ketika jumlah data, waktu pelatihan, dan keadaan jaringan setiap klien tidak sama. Seleksi klien berdasarkan sumber daya sudah dikaji, misalnya oleh Nishio dan Yonetani \cite{nishio2019}, sementara pengurangan ukuran pembaruan melalui sparsifikasi juga telah dipelajari \cite{lin2018}. Kedua keputusan itu memengaruhi biaya komunikasi melalui jalur yang berbeda: seberapa sering klien bertukar pesan dan seberapa besar pesan yang dikirim.
+
+Penelitian terkait deteksi anomali jaringan oleh Marfo dkk. memadukan seleksi klien adaptif, ukuran \textit{batch}, dan pembaruan asinkron; biaya komunikasi yang mereka laporkan terutama berupa waktu \cite{marfo2025}. Penelitian ini mengambil ruang lingkup yang lebih sempit dan terkontrol: satu estimasi kebutuhan komunikasi dari keadaan klien dipakai untuk mengatur \emph{kesempatan berpartisipasi} dan \emph{anggaran ukuran pembaruan}. Efek masing-masing keputusan dan efek gabungannya akan dipisahkan melalui empat kebijakan pada fondasi FL asinkron yang sama. Penghematan akan dihitung dari jumlah \textit{byte} pesan yang benar-benar diserialisasi, termasuk indeks dan metadata, sehingga proporsi parameter yang dipilih tidak langsung dianggap setara dengan penghematan komunikasi.
+
+Data utama yang direncanakan adalah UNSW-NB15 dengan tugas klasifikasi biner normal atau serangan. Dataset ini menyediakan pembagian latih dan uji yang diterbitkan oleh UNSW \cite{moustafa2015,unswdata}. Data latih dibagi kepada sepuluh klien logis menggunakan kemencengan label Dirichlet dengan $\alpha=0{,}5$. Pembagian itu mensimulasikan data \textit{non-IID}, bukan merepresentasikan distribusi jaringan organisasi nyata. Dengan pengaturan tersebut, penelitian menilai apakah keputusan komunikasi yang berubah mengikuti keadaan klien dapat mengurangi biaya tanpa mengorbankan kualitas deteksi di luar batas yang telah ditentukan sebelum eksperimen utama.
+
+\section{Rumusan Masalah}
+Permasalahan utama penelitian ini adalah belum diketahuinya manfaat pengendalian bersama partisipasi dan ukuran pembaruan berdasarkan keadaan klien pada FL asinkron untuk NIDS, ketika biaya dihitung pada tingkat \textit{byte} dan kualitas deteksi dijaga. Pertanyaan penelitian dirumuskan sebagai berikut.
+\begin{enumerate}
+  \item Bagaimana keadaan klien yang tersedia pada saat keputusan dibuat dipetakan menjadi kebutuhan partisipasi dan kebutuhan anggaran pembaruan yang dapat diaudit?
+  \item Apakah kebijakan gabungan dapat mengurangi \textit{byte} komunikasi dan waktu untuk mencapai kualitas validasi yang ditetapkan, dibandingkan kebijakan asinkron seragam, tanpa menurunkan kualitas deteksi melebihi margin yang disepakati?
+  \item Berapa kontribusi pengaturan partisipasi dan pengaturan anggaran pembaruan secara terpisah terhadap perubahan biaya komunikasi, waktu, dan kualitas model?
+  \item Bagaimana heterogenitas jaringan dan pembaruan yang tertinggal berkaitan dengan keputusan kebijakan, pemerataan partisipasi, dan kegagalan mencapai target?
+\end{enumerate}
+
+\section{Tujuan Penelitian}
+\begin{enumerate}
+  \item Merancang pemetaan keadaan klien menjadi dua skor kebutuhan dan dua tindakan komunikasi yang deterministik serta dapat direproduksi.
+  \item Mengukur perbedaan \textit{byte} komunikasi, waktu, staleness, partisipasi, dan kualitas deteksi antara kebijakan dasar dan kebijakan gabungan pada data \textit{non-IID} yang tersimulasikan.
+  \item Mengisolasi pengaruh setiap tindakan melalui perbandingan empat kebijakan dengan model, agregasi, pelatihan lokal, partisi data, dan profil jaringan yang setara.
+\end{enumerate}
+
+\section{Batasan Penelitian}
+Penelitian berfokus pada satu model MLP untuk klasifikasi biner UNSW-NB15. Sepuluh klien adalah partisi logis dari dataset, bukan sepuluh institusi pemilik data. Kondisi utama memakai $\alpha=0{,}5$ dan tiga \textit{seed} yang sama pada setiap kebijakan. Model, optimisasi lokal, batas komputasi, serta aturan agregasi dan staleness dipertahankan sama pada seluruh perbandingan. Sumber daya yang diatur adalah kesempatan partisipasi dan ukuran pembaruan \emph{unggah}; jumlah \textit{epoch}, ukuran \textit{batch}, CPU, dan memori tidak menjadi tindakan adaptif. Pengujian dilakukan pada lingkungan penelitian terkendali, sehingga hasilnya tidak langsung menyatakan kinerja pada jaringan produksi. Pengulangan pada dataset lain dan pembanding FL sinkron menjadi perluasan setelah eksperimen utama selesai.
+
+\section{Manfaat dan Luaran}
+Manfaat yang diharapkan adalah rancangan pengukuran komunikasi yang dapat diaudit dan bukti empiris tentang kapan pengaturan bersama dua sumber daya komunikasi berguna atau gagal. Luaran Seminar Proposal adalah laporan Bab I--III ini beserta rancangan eksperimennya. Luaran akhir Tugas Akhir direncanakan berbentuk \emph{artikel ilmiah} yang menyajikan metode, hasil perbandingan, ablasi, dan batas validitas setelah eksperimen terlaksana. Tidak ada klaim keberhasilan metode usulan pada tahap proposal.

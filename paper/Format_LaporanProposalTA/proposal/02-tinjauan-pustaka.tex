@@ -1,0 +1,56 @@
+\chapter{Tinjauan Pustaka}
+\label{bab:pustaka}
+
+\section{Network Intrusion Detection dan Dataset}
+NIDS berbasis pembelajaran mesin mengklasifikasikan catatan lalu lintas jaringan untuk membantu mengenali aktivitas mencurigakan. Pada penelitian ini, keluaran model hanya dua kelas, yaitu normal dan serangan; model tidak memblokir lalu lintas secara langsung. UNSW-NB15 dipilih karena menyediakan fitur lalu lintas, label normal atau serangan, dan pembagian latih serta uji yang dapat dipakai secara konsisten \cite{moustafa2015,unswdata}. Pembagian tersebut penting agar pengukuran akhir tidak tercampur dengan data yang dipakai untuk memilih aturan atau ambang kebijakan.
+
+Ketidakseimbangan kelas dan perbedaan sebaran antara data latih, validasi, dan uji dapat membuat akurasi saja kurang cukup. Karena itu, \textit{Macro-F1} menjadi ukuran utama kualitas, disertai \textit{recall} kelas serangan dan \textit{area under the precision--recall curve} (AUPRC). Nilai \textit{Macro-F1} adalah rerata F1 kedua kelas:
+\begin{equation}
+  F1_{\mathrm{macro}}=\frac{F1_{\mathrm{normal}}+F1_{\mathrm{attack}}}{2},\qquad
+  F1_c=\frac{2P_cR_c}{P_c+R_c}.
+\end{equation}
+Di sini $P_c$ dan $R_c$ masing-masing adalah presisi dan \textit{recall} untuk kelas $c$; aturan ketika penyebut nol harus konsisten dalam semua kebijakan.
+
+\section{Federated Learning Asinkron dan Data Non-IID}
+Dalam FL, klien menghitung pembaruan dari data lokal, lalu server menggabungkan informasi tersebut menjadi model global \cite{mcmahan2017}. Secara konseptual, tujuan pelatihan adalah meminimalkan $F(w)=\sum_{i=1}^{K}(n_i/n)F_i(w)$, dengan $n_i$ jumlah contoh pada klien $i$ dan $n=\sum_i n_i$. Persamaan ini menyatakan tujuan global, bukan aturan agregasi khusus yang diusulkan penelitian ini. Pada fondasi asinkron, server menerapkan pembaruan saat tiba; jika klien mulai dari versi $v_i^{\mathrm{start}}$ dan pembaruan tiba pada versi $v_i^{\mathrm{arrival}}$, staleness dicatat sebagai
+\begin{equation}
+  \tau_i=v_i^{\mathrm{arrival}}-v_i^{\mathrm{start}}.
+\end{equation}
+Aturan penanganan $\tau_i$ harus sama untuk seluruh kebijakan agar perbandingan tetap terisolasi \cite{xie2019}.
+
+Data tiap klien sering memiliki proporsi kelas berbeda. Dalam penelitian ini, pembagian Dirichlet dipakai untuk membentuk kemencengan label yang terkendali. Parameter $\alpha=0{,}5$ dipakai sebagai kondisi utama, dengan manifest partisi dan \textit{seed} tetap. Penggunaan Dirichlet sebagai alat simulasi tingkat heterogenitas telah ditunjukkan pada studi FL sebelumnya \cite{hsu2019}. Karena pembagian dibuat dari satu dataset, kesimpulan hanya berlaku untuk kondisi \textit{non-IID} yang disimulasikan dan profil sistem yang diuji.
+
+\section{Partisipasi Klien dan Anggaran Pembaruan}
+Pemilihan klien menentukan siapa yang memperoleh kesempatan mengunduh model dan mengirim pembaruan. FedCS menunjukkan bahwa kapasitas komputasi dan komunikasi klien dapat menjadi dasar seleksi \cite{nishio2019}. Pada FL asinkron, kesempatan partisipasi lebih tepat diatur melalui prioritas atau jeda antar kesempatan berdasarkan peristiwa server daripada melalui jumlah klien per \textit{round}. Pengaturan yang terlalu mengutamakan klien cepat dapat mengabaikan kontribusi klien lain; karena itu distribusi kesempatan dan masa tidak aktif perlu dipantau.
+
+Anggaran pembaruan membatasi bagian perubahan parameter yang dikirim. Salah satu operator yang dapat dipakai adalah \textit{magnitude top-k}, yaitu memilih elemen dengan nilai absolut terbesar dan menyertakan posisi elemennya. Penelitian kompresi gradien telah menunjukkan bahwa komunikasi dapat dikurangi melalui sparsifikasi, tetapi operator dan konteksnya berbeda dari evaluasi FL-NIDS yang direncanakan di sini \cite{lin2018}. Dalam penelitian ini, anggaran kandidat adalah 25\%, 50\%, dan 100\% dari elemen perubahan model. Besar pesan sesungguhnya tetap bergantung pada nilai, indeks, header, dan metadata. Karena itu, penurunan kepadatan elemen tidak diperlakukan sebagai penghematan \textit{byte} sebelum pesan diserialisasi dan dihitung.
+
+\section{Penelitian Terkait dan Posisi Penelitian}
+\begin{table}[ht]
+\centering
+\caption{Ringkasan karya yang melandasi rancangan penelitian}
+\label{tab:terkait}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{5.0cm}>{\raggedright\arraybackslash}p{4.9cm}}
+\toprule
+Karya & Fokus utama & Kaitannya dengan penelitian ini \\
+\midrule
+McMahan dkk. \cite{mcmahan2017} & Pelatihan model bersama melalui pembaruan lokal. & Dasar FL; bukan uji dua tindakan komunikasi asinkron. \\
+Xie dkk. \cite{xie2019} & Optimisasi federasi asinkron dan staleness. & Dasar fondasi asinkron; aturan agregasi dijaga tetap. \\
+Nishio dan Yonetani \cite{nishio2019} & Seleksi klien dengan kendala sumber daya. & Landasan tindakan partisipasi; anggaran pembaruan tidak menjadi fokusnya. \\
+Lin dkk. \cite{lin2018} & Kompresi gradien untuk mengurangi komunikasi. & Landasan sparsifikasi; biaya pesan NIDS tetap perlu diukur sendiri. \\
+Marfo dkk. \cite{marfo2025} & Seleksi adaptif, ukuran \textit{batch}, dan pembaruan asinkron untuk deteksi anomali jaringan. & Karya terdekat; penelitian ini menguji dua tindakan komunikasi dengan ablasi dan akuntansi \textit{byte}. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Perbedaan yang diuji penelitian ini bersifat operasional: satu modul estimasi kebutuhan menghasilkan dua keluaran untuk mengatur kesempatan partisipasi dan anggaran pembaruan pada fondasi yang sama. Penelitian ini tidak mengklaim menemukan FL asinkron, seleksi klien, atau sparsifikasi baru. Kesimpulan tentang manfaat gabungan hanya dapat ditarik setelah kebijakan yang mengubah satu tindakan saja dibandingkan dengan kebijakan dasar dan kebijakan gabungan.
+
+\section{Kerangka Pikir dan Hipotesis Kerja}
+Keadaan klien yang tersedia pada waktu keputusan membentuk vektor
+\begin{equation}
+  x_i(t)=\left[n_i,\,T_i^{\mathrm{prev}},\,RTT_i,\,BW_i,\,\tau_i,\,age_i\right].
+\end{equation}
+Jumlah sampel dan durasi pelatihan sebelumnya menggambarkan beban lokal; \textit{round-trip time} ($RTT_i$) dan \textit{throughput} ($BW_i$) menggambarkan kondisi komunikasi; $\tau_i$ dan $age_i$ menggambarkan ketertinggalan pembaruan dan lama sejak kontribusi terakhir. Satu pemetaan deterministik yang akan ditetapkan setelah kalibrasi menghasilkan $D_i(t)=[d_{\mathrm{part},i},d_{\mathrm{budget},i}]$. Kedua skor dipetakan menjadi prioritas partisipasi dan anggaran pembaruan. Hanya nilai yang telah tersedia sebelum keputusan boleh dipakai, sehingga informasi dari pembaruan atau hasil evaluasi masa depan tidak bocor ke tindakan saat ini.
+
+Hipotesis kerja penelitian adalah kebijakan gabungan dapat mencapai kualitas validasi yang ditetapkan dengan lebih sedikit \textit{byte} daripada kebijakan seragam, sambil mempertahankan \textit{Macro-F1} dalam margin yang ditentukan. Hipotesis ini dapat ditolak. Pengaturan partisipasi saja dan pengaturan anggaran saja diperlukan untuk menjelaskan sumber efek; keluaran negatif tetap dicatat sebagai hasil penelitian.
